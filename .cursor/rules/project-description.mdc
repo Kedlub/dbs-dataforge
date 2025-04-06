@@ -1,0 +1,82 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Databázová aplikace pro správu rezervací sportovního
+
+# centra
+
+### Dataforge
+
+### 18. února 2025
+
+## 1 Úvod
+
+Cílem projektu je vytvoření moderní databázové aplikace, která zajistí efektivní správu
+rezervací v rámci sportovního centra. Nový systém nahradí dosavadní řešení a umožní
+detailní evidenci uživatelů, sportovišť, rezervací v časových slotech a správu provozu
+prostřednictvím přehledných reportů.
+
+## 2 Popis prostředí
+
+Sportovní centrum “ActiveLife” je moderní zařízení poskytující široké spektrum sportov-
+ních aktivit, od fitness a plavání až po týmové sporty. Dosavadní IT řešení je založeno na
+jednoduché evidenci rezervací, která je vedena manuálně či pomocí základních kancelář-
+ských aplikací. V důsledku rostoucího počtu návštěvníků a rozšiřující nabídky služeb se
+ukázalo, že stávající systém nedostačuje požadavkům na flexibilitu a rychlost zpracování
+dat. Proto bylo rozhodnuto o vývoji nové databázové aplikace, která zefektivní provoz
+centra a usnadní správu informací o rezervacích a aktivitách.
+
+## 3 Požadavky na nový systém
+
+### 3.1 Evidence a správa dat
+
+- **Uživatelé:** Záznamy o návštěvnících, jejich kontaktní údaje a přihlašovací infor-
+    mace.
+- **Sportoviště a aktivity:** Seznam dostupných sportovišť a sportovních aktivit, je-
+    jich kapacity a provozní doba.
+- **Rezervace:** Evidování rezervací s časovými sloty, včetně možnosti storna a úprav
+    dle pravidel centra.
+- **Zaměstnanci:** Data o pracovnících zajišťujících provoz, včetně jejich pracovních
+    směn a přidělených úkolů.
+
+#### 1
+
+
+### 3.2 Vstupy a výstupy
+
+- **Vstupy:** Uživatelské formuláře pro registraci, přihlášení, vytváření a úpravu rezer-
+    vací, zadávání nových sportovních aktivit a nastavení cen.
+- **Výstupy:** Přehledné reporty o využití sportovišť, seznam rezervací pro jednotlivé
+    uživatele a statistiky pro interní účely, které podpoří plánování a marketing centra.
+
+### 3.3 Uživatelská práva a role
+
+- **Běžný uživatel:** Přístup ke svým rezervacím, možnost jejich úprav a storna dle
+    stanovených pravidel.
+- **Zaměstnanec:** Přehled o aktuálních rezervacích, správa provozních informací a
+    podpora při řešení provozních situací.
+- **Správce centra:** Rozšířená oprávnění zahrnující přidávání a úpravu sportovních
+    aktivit, nastavování cen, správu provozní doby a generování reportů.
+
+## 4 Další technické požadavky
+
+- **Databázové řešení:** Aplikace bude postavena na relační databázi s důrazem na
+    rychlost dotazů a integritu dat.
+- **Uživatelské rozhraní:** Intuitivní a responzivní design přizpůsobený pro různé
+    typy zařízení (PC, tablet, mobil).
+- **Bezpečnost:** Implementace šifrované komunikace a zabezpečeného přístupu k cit-
+    livým datům, včetně pravidelné zálohy databáze.
+
+## 5 Závěr
+
+Nová databázová aplikace pro správu rezervací sportovního centra “ActiveLife” přinese
+zvýšení efektivity provozu, lepší kontrolu nad využitím sportovišť a zlepší zákaznickou
+zkušenost díky snadné správě rezervací. Projekt bude realizován s ohledem na aktuální
+technologické trendy a bezpečnostní standardy, což zajistí dlouhodobou udržitelnost a
+flexibilitu systému.
+
+#### 2
+
+
