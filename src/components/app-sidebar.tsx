@@ -113,9 +113,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 		if (isAuthenticated) {
 			commonItems.push({
 				title: 'Profile',
-				url: '/profile',
+				url: '/app/profile',
 				icon: User,
-				isActive: pathname === '/profile'
+				isActive: pathname === '/app/profile'
 			});
 
 			commonItems.push({

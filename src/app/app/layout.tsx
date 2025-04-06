@@ -12,8 +12,7 @@ export default async function AppLayout({
 	const session = await getAuthSession();
 
 	if (!session?.user) {
-		// Redirect to login without callback to prevent redirect loops
-		redirect('/auth/login');
+		redirect('/auth/login?callbackUrl=/app');
 	}
 
 	return (

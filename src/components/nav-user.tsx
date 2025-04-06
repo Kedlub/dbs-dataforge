@@ -135,13 +135,13 @@ export function NavUser() {
 						<DropdownMenuSeparator />
 						<DropdownMenuGroup>
 							<DropdownMenuItem asChild>
-								<Link href="/profile">
+								<Link href="/app/profile">
 									<UserIcon className="mr-2 h-4 w-4" />
 									My Profile
 								</Link>
 							</DropdownMenuItem>
 							<DropdownMenuItem asChild>
-								<Link href="/reservations">
+								<Link href="/app/reservations">
 									<Bell className="mr-2 h-4 w-4" />
 									My Reservations
 								</Link>
@@ -153,7 +153,7 @@ export function NavUser() {
 								<DropdownMenuSeparator />
 								<DropdownMenuGroup>
 									<DropdownMenuItem asChild>
-										<Link href="/admin">
+										<Link href="/app/admin">
 											<Shield className="mr-2 h-4 w-4" />
 											Admin Dashboard
 										</Link>
@@ -167,7 +167,7 @@ export function NavUser() {
 								<DropdownMenuSeparator />
 								<DropdownMenuGroup>
 									<DropdownMenuItem asChild>
-										<Link href="/employee">
+										<Link href="/app/employee">
 											<Users className="mr-2 h-4 w-4" />
 											Employee Portal
 										</Link>
