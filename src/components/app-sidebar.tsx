@@ -2,16 +2,16 @@
 
 import * as React from 'react';
 import {
-	AudioWaveform,
-	BookOpen,
-	Bot,
-	Command,
-	Frame,
-	GalleryVerticalEnd,
-	Map,
-	PieChart,
-	Settings2,
-	SquareTerminal
+	Calendar,
+	Users,
+	Dumbbell,
+	Clock,
+	BookCheck,
+	User,
+	UserCog,
+	BarChart,
+	Settings,
+	Home
 } from 'lucide-react';
 
 import { NavMain } from '@/components/nav-main';
@@ -24,113 +24,146 @@ import {
 	SidebarRail
 } from '@/components/ui/sidebar';
 
-// This is sample data.
+// Navigation data based on sports center reservation system
 const data = {
 	user: {
-		name: 'shadcn',
-		email: 'm@example.com',
-		avatar: '/avatars/shadcn.jpg'
+		name: 'User',
+		email: 'user@activelife.com',
+		avatar: '/avatars/user.jpg'
 	},
-	teams: [
-		{
-			name: 'Acme Inc',
-			logo: GalleryVerticalEnd,
-			plan: 'Enterprise'
-		},
-		{
-			name: 'Acme Corp.',
-			logo: AudioWaveform,
-			plan: 'Startup'
-		},
-		{
-			name: 'Evil Corp.',
-			logo: Command,
-			plan: 'Free'
-		}
-	],
 	navMain: [
 		{
-			title: 'Playground',
-			url: '#',
-			icon: SquareTerminal,
-			isActive: true,
+			title: 'Dashboard',
+			url: '/',
+			icon: Home,
+			isActive: true
+		},
+		{
+			title: 'Facilities',
+			url: '/facilities',
+			icon: Dumbbell,
 			items: [
+				{
+					title: 'All Facilities',
+					url: '/facilities'
+				},
+				{
+					title: 'Availability',
+					url: '/facilities/availability'
+				}
+			]
+		},
+		{
+			title: 'Activities',
+			url: '/activities',
+			icon: Calendar,
+			items: [
+				{
+					title: 'Browse Activities',
+					url: '/activities'
+				},
+				{
+					title: 'Schedule',
+					url: '/activities/schedule'
+				}
+			]
+		},
+		{
+			title: 'Reservations',
+			url: '/reservations',
+			icon: BookCheck,
+			items: [
+				{
+					title: 'My Reservations',
+					url: '/reservations'
+				},
+				{
+					title: 'Create Reservation',
+					url: '/reservations/create'
+				},
 				{
 					title: 'History',
-					url: '#'
-				},
-				{
-					title: 'Starred',
-					url: '#'
-				},
-				{
-					title: 'Settings',
-					url: '#'
+					url: '/reservations/history'
 				}
 			]
 		},
 		{
-			title: 'Models',
-			url: '#',
-			icon: Bot,
+			title: 'Time Slots',
+			url: '/time-slots',
+			icon: Clock,
 			items: [
 				{
-					title: 'Genesis',
-					url: '#'
+					title: 'Available Slots',
+					url: '/time-slots'
 				},
 				{
-					title: 'Explorer',
-					url: '#'
-				},
-				{
-					title: 'Quantum',
-					url: '#'
+					title: 'Schedule View',
+					url: '/time-slots/schedule'
 				}
 			]
 		},
 		{
-			title: 'Documentation',
-			url: '#',
-			icon: BookOpen,
+			title: 'Users',
+			url: '/users',
+			icon: Users,
 			items: [
 				{
-					title: 'Introduction',
-					url: '#'
+					title: 'All Users',
+					url: '/users'
 				},
 				{
-					title: 'Get Started',
-					url: '#'
-				},
-				{
-					title: 'Tutorials',
-					url: '#'
-				},
-				{
-					title: 'Changelog',
-					url: '#'
+					title: 'Register User',
+					url: '/users/register'
 				}
 			]
+		},
+		{
+			title: 'Employee Portal',
+			url: '/employee',
+			icon: UserCog,
+			items: [
+				{
+					title: 'Shifts',
+					url: '/employee/shifts'
+				},
+				{
+					title: 'Manage Reservations',
+					url: '/employee/reservations'
+				}
+			]
+		},
+		{
+			title: 'Reports',
+			url: '/reports',
+			icon: BarChart,
+			items: [
+				{
+					title: 'Usage Statistics',
+					url: '/reports/usage'
+				},
+				{
+					title: 'Financial Reports',
+					url: '/reports/financial'
+				}
+			]
+		},
+		{
+			title: 'Profile',
+			url: '/profile',
+			icon: User
 		},
 		{
 			title: 'Settings',
-			url: '#',
-			icon: Settings2,
+			url: '/settings',
+			icon: Settings,
 			items: [
 				{
-					title: 'General',
-					url: '#'
+					title: 'Account',
+					url: '/settings/account'
 				},
 				{
-					title: 'Team',
-					url: '#'
-				},
-				{
-					title: 'Billing',
-					url: '#'
-				},
-				{
-					title: 'Limits',
-					url: '#'
+					title: 'Preferences',
+					url: '/settings/preferences'
 				}
 			]
 		}
@@ -141,7 +174,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 	return (
 		<Sidebar collapsible="icon" {...props}>
 			<SidebarHeader>
-				<h1>Logo</h1>
+				<h1>ActiveLife</h1>
 			</SidebarHeader>
 			<SidebarContent>
 				<NavMain items={data.navMain} />
