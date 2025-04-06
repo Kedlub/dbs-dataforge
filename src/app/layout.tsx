@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import './globals.css';
 import AuthProvider from '@/providers/AuthProvider';
+import { Toaster } from '@/components/ui/sonner';
 
 export const metadata: Metadata = {
 	title: 'ActiveLife Sports Center',
@@ -16,6 +17,7 @@ export default function RootLayout({
 		<html lang="en">
 			<body className={`antialiased`}>
 				<AuthProvider>{children}</AuthProvider>
+				<Toaster />
 			</body>
 		</html>
 	);
