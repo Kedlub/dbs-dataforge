@@ -1,0 +1,12 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Project Technologies
+- The project uses shadcn/ui components (and thus Tailwind css), use shadcn/ui style guides.
+- The project uses Prisma as ORM, and PostgreSQL as the underlying DB.
+- The project uses Next.js App Router in src/ folder.
+- The project uses Typescript.
+- Project uses PNPM as a package manager.
+- All Typescript types should be in src/lib/types.ts
