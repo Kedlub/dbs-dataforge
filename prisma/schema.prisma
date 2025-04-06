@@ -27,17 +27,17 @@ model Role {
 
 // Users of the system
 model User {
-  id               String       @id @default(uuid())
-  username         String       @unique
-  passwordHash     String       @map("password_hash")
-  firstName        String       @map("first_name")
-  lastName         String       @map("last_name")
-  email            String       @unique
+  id               String        @id @default(uuid())
+  username         String        @unique
+  passwordHash     String        @map("password_hash")
+  firstName        String        @map("first_name")
+  lastName         String        @map("last_name")
+  email            String        @unique
   phone            String?
-  registrationDate DateTime     @default(now()) @map("registration_date")
-  isActive         Boolean      @default(true) @map("is_active")
-  roleId           String       @map("role_id")
-  role             Role         @relation(fields: [roleId], references: [id])
+  registrationDate DateTime      @default(now()) @map("registration_date")
+  isActive         Boolean       @default(true) @map("is_active")
+  roleId           String        @map("role_id")
+  role             Role          @relation(fields: [roleId], references: [id])
   employee         Employee?
   reservations     Reservation[]
   reports          Report[]
@@ -60,40 +60,40 @@ model Employee {
 
 // Facilities (sports venues)
 model Facility {
-  id           String             @id @default(uuid())
-  name         String
-  description  String?
-  capacity     Int
-  status       String // e.g., "active", "maintenance", "closed"
-  openingHour  Int                @map("opening_hour") // Hour of day (0-23)
-  closingHour  Int                @map("closing_hour") // Hour of day (0-23)
-  timeSlots    TimeSlot[]
-  activities   FacilityActivity[]
+  id          String             @id @default(uuid())
+  name        String
+  description String?
+  capacity    Int
+  status      String // e.g., "active", "maintenance", "closed"
+  openingHour Int                @map("opening_hour") // Hour of day (0-23)
+  closingHour Int                @map("closing_hour") // Hour of day (0-23)
+  timeSlots   TimeSlot[]
+  activities  FacilityActivity[]
 
   @@map("facilities")
 }
 
 // Activities offered at the sports center
 model Activity {
-  id               String             @id @default(uuid())
-  name             String
-  description      String?
-  durationMinutes  Int                @map("duration_minutes")
-  price            Decimal
-  maxParticipants  Int                @map("max_participants")
-  isActive         Boolean            @default(true) @map("is_active")
-  facilities       FacilityActivity[]
-  reservations     Reservation[]
+  id              String             @id @default(uuid())
+  name            String
+  description     String?
+  durationMinutes Int                @map("duration_minutes")
+  price           Decimal
+  maxParticipants Int                @map("max_participants")
+  isActive        Boolean            @default(true) @map("is_active")
+  facilities      FacilityActivity[]
+  reservations    Reservation[]
 
   @@map("activities")
 }
 
 // Many-to-many relationship between facilities and activities
 model FacilityActivity {
-  facilityId  String    @map("facility_id")
-  activityId  String    @map("activity_id")
-  facility    Facility  @relation(fields: [facilityId], references: [id])
-  activity    Activity  @relation(fields: [activityId], references: [id])
+  facilityId String   @map("facility_id")
+  activityId String   @map("activity_id")
+  facility   Facility @relation(fields: [facilityId], references: [id])
+  activity   Activity @relation(fields: [activityId], references: [id])
 
   @@id([facilityId, activityId])
   @@map("facility_activities")
@@ -101,57 +101,57 @@ model FacilityActivity {
 
 // Time slots for reservations
 model TimeSlot {
-  id            String        @id @default(uuid())
-  facilityId    String        @map("facility_id")
-  facility      Facility      @relation(fields: [facilityId], references: [id])
-  startTime     DateTime      @map("start_time")
-  endTime       DateTime      @map("end_time")
-  isAvailable   Boolean       @default(true) @map("is_available")
-  reservations  Reservation[]
+  id           String        @id @default(uuid())
+  facilityId   String        @map("facility_id")
+  facility     Facility      @relation(fields: [facilityId], references: [id])
+  startTime    DateTime      @map("start_time")
+  endTime      DateTime      @map("end_time")
+  isAvailable  Boolean       @default(true) @map("is_available")
+  reservations Reservation[]
 
   @@map("time_slots")
 }
 
 // Reservations made by users
 model Reservation {
-  id                 String    @id @default(uuid())
-  userId             String    @map("user_id")
-  user               User      @relation(fields: [userId], references: [id])
-  slotId             String    @map("slot_id")
-  timeSlot           TimeSlot  @relation(fields: [slotId], references: [id])
-  activityId         String    @map("activity_id")
-  activity           Activity  @relation(fields: [activityId], references: [id])
-  createdAt          DateTime  @default(now()) @map("created_at")
-  status             String    // e.g., "confirmed", "cancelled", "pending"
-  cancellationReason String?   @map("cancellation_reason")
-  totalPrice         Decimal   @map("total_price")
-  lastModified       DateTime  @updatedAt @map("last_modified")
+  id                 String   @id @default(uuid())
+  userId             String   @map("user_id")
+  user               User     @relation(fields: [userId], references: [id])
+  slotId             String   @map("slot_id")
+  timeSlot           TimeSlot @relation(fields: [slotId], references: [id])
+  activityId         String   @map("activity_id")
+  activity           Activity @relation(fields: [activityId], references: [id])
+  createdAt          DateTime @default(now()) @map("created_at")
+  status             String // e.g., "confirmed", "cancelled", "pending"
+  cancellationReason String?  @map("cancellation_reason")
+  totalPrice         Decimal  @map("total_price")
+  lastModified       DateTime @updatedAt @map("last_modified")
 
   @@map("reservations")
 }
 
 // Employee work shifts
 model EmployeeShift {
-  id          String    @id @default(uuid())
-  employeeId  String    @map("employee_id")
-  employee    Employee  @relation(fields: [employeeId], references: [id])
-  startTime   DateTime  @map("start_time")
-  endTime     DateTime  @map("end_time")
-  shiftType   String    @map("shift_type") // e.g., "morning", "afternoon", "evening"
+  id         String   @id @default(uuid())
+  employeeId String   @map("employee_id")
+  employee   Employee @relation(fields: [employeeId], references: [id])
+  startTime  DateTime @map("start_time")
+  endTime    DateTime @map("end_time")
+  shiftType  String   @map("shift_type") // e.g., "morning", "afternoon", "evening"
 
   @@map("employee_shifts")
 }
 
 // Reports for management
 model Report {
-  id           String    @id @default(uuid())
-  title        String
-  description  String?
-  generatedBy  String    @map("generated_by")
-  user         User      @relation(fields: [generatedBy], references: [id])
-  generatedAt  DateTime  @default(now()) @map("generated_at")
-  reportType   String    @map("report_type")
-  reportData   Json      @map("report_data")
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  generatedBy String   @map("generated_by")
+  user        User     @relation(fields: [generatedBy], references: [id])
+  generatedAt DateTime @default(now()) @map("generated_at")
+  reportType  String   @map("report_type")
+  reportData  Json     @map("report_data")
 
   @@map("reports")
 }
