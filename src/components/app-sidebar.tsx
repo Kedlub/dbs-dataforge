@@ -13,6 +13,7 @@ import {
 	Settings,
 	Home
 } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -23,164 +24,190 @@ import {
 	SidebarHeader,
 	SidebarRail
 } from '@/components/ui/sidebar';
-
-// Navigation data based on sports center reservation system
-const data = {
-	user: {
-		name: 'User',
-		email: 'user@activelife.com',
-		avatar: '/avatars/user.jpg'
-	},
-	navMain: [
-		{
-			title: 'Dashboard',
-			url: '/',
-			icon: Home,
-			isActive: true
-		},
-		{
-			title: 'Facilities',
-			url: '/facilities',
-			icon: Dumbbell,
-			items: [
-				{
-					title: 'All Facilities',
-					url: '/facilities'
-				},
-				{
-					title: 'Availability',
-					url: '/facilities/availability'
-				}
-			]
-		},
-		{
-			title: 'Activities',
-			url: '/activities',
-			icon: Calendar,
-			items: [
-				{
-					title: 'Browse Activities',
-					url: '/activities'
-				},
-				{
-					title: 'Schedule',
-					url: '/activities/schedule'
-				}
-			]
-		},
-		{
-			title: 'Reservations',
-			url: '/reservations',
-			icon: BookCheck,
-			items: [
-				{
-					title: 'My Reservations',
-					url: '/reservations'
-				},
-				{
-					title: 'Create Reservation',
-					url: '/reservations/create'
-				},
-				{
-					title: 'History',
-					url: '/reservations/history'
-				}
-			]
-		},
-		{
-			title: 'Time Slots',
-			url: '/time-slots',
-			icon: Clock,
-			items: [
-				{
-					title: 'Available Slots',
-					url: '/time-slots'
-				},
-				{
-					title: 'Schedule View',
-					url: '/time-slots/schedule'
-				}
-			]
-		},
-		{
-			title: 'Users',
-			url: '/users',
-			icon: Users,
-			items: [
-				{
-					title: 'All Users',
-					url: '/users'
-				},
-				{
-					title: 'Register User',
-					url: '/users/register'
-				}
-			]
-		},
-		{
-			title: 'Employee Portal',
-			url: '/employee',
-			icon: UserCog,
-			items: [
-				{
-					title: 'Shifts',
-					url: '/employee/shifts'
-				},
-				{
-					title: 'Manage Reservations',
-					url: '/employee/reservations'
-				}
-			]
-		},
-		{
-			title: 'Reports',
-			url: '/reports',
-			icon: BarChart,
-			items: [
-				{
-					title: 'Usage Statistics',
-					url: '/reports/usage'
-				},
-				{
-					title: 'Financial Reports',
-					url: '/reports/financial'
-				}
-			]
-		},
-		{
-			title: 'Profile',
-			url: '/profile',
-			icon: User
-		},
-		{
-			title: 'Settings',
-			url: '/settings',
-			icon: Settings,
-			items: [
-				{
-					title: 'Account',
-					url: '/settings/account'
-				},
-				{
-					title: 'Preferences',
-					url: '/settings/preferences'
-				}
-			]
-		}
-	]
-};
+import { useAuth } from '@/hooks/useAuth';
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+	const { isAdmin, isEmployee, isAuthenticated } = useAuth();
+	const pathname = usePathname();
+
+	// Generate navigation data based on user role
+	const generateNavigation = () => {
+		const commonItems = [
+			{
+				title: 'Dashboard',
+				url: '/app',
+				icon: Home,
+				isActive: pathname === '/app'
+			},
+			{
+				title: 'Facilities',
+				url: '/app/facilities',
+				icon: Dumbbell,
+				isActive: pathname.startsWith('/app/facilities'),
+				items: [
+					{
+						title: 'All Facilities',
+						url: '/app/facilities'
+					},
+					{
+						title: 'Availability',
+						url: '/app/facilities/availability'
+					}
+				]
+			},
+			{
+				title: 'Activities',
+				url: '/app/activities',
+				icon: Calendar,
+				isActive: pathname.startsWith('/app/activities'),
+				items: [
+					{
+						title: 'Browse Activities',
+						url: '/app/activities'
+					},
+					{
+						title: 'Schedule',
+						url: '/app/activities/schedule'
+					}
+				]
+			},
+			{
+				title: 'Reservations',
+				url: '/app/reservations',
+				icon: BookCheck,
+				isActive: pathname.startsWith('/app/reservations'),
+				items: [
+					{
+						title: 'My Reservations',
+						url: '/app/reservations'
+					},
+					{
+						title: 'Create Reservation',
+						url: '/app/reservations/create'
+					},
+					{
+						title: 'History',
+						url: '/app/reservations/history'
+					}
+				]
+			},
+			{
+				title: 'Time Slots',
+				url: '/app/time-slots',
+				icon: Clock,
+				isActive: pathname.startsWith('/app/time-slots'),
+				items: [
+					{
+						title: 'Available Slots',
+						url: '/app/time-slots'
+					},
+					{
+						title: 'Schedule View',
+						url: '/app/time-slots/schedule'
+					}
+				]
+			}
+		];
+
+		// Items for authenticated users
+		if (isAuthenticated) {
+			commonItems.push({
+				title: 'Profile',
+				url: '/profile',
+				icon: User,
+				isActive: pathname === '/profile'
+			});
+
+			commonItems.push({
+				title: 'Settings',
+				url: '/app/settings',
+				icon: Settings,
+				isActive: pathname.startsWith('/app/settings'),
+				items: [
+					{
+						title: 'Account',
+						url: '/app/settings/account'
+					},
+					{
+						title: 'Preferences',
+						url: '/app/settings/preferences'
+					}
+				]
+			});
+		}
+
+		// Items for admin role
+		if (isAdmin) {
+			commonItems.push({
+				title: 'Users',
+				url: '/app/users',
+				icon: Users,
+				isActive: pathname.startsWith('/app/users'),
+				items: [
+					{
+						title: 'All Users',
+						url: '/app/users'
+					},
+					{
+						title: 'Register User',
+						url: '/app/users/register'
+					}
+				]
+			});
+
+			commonItems.push({
+				title: 'Reports',
+				url: '/app/reports',
+				icon: BarChart,
+				isActive: pathname.startsWith('/app/reports'),
+				items: [
+					{
+						title: 'Usage Statistics',
+						url: '/app/reports/usage'
+					},
+					{
+						title: 'Financial Reports',
+						url: '/app/reports/financial'
+					}
+				]
+			});
+		}
+
+		// Items for employee or admin role
+		if (isEmployee || isAdmin) {
+			commonItems.push({
+				title: 'Employee Portal',
+				url: '/app/employee',
+				icon: UserCog,
+				isActive: pathname.startsWith('/app/employee'),
+				items: [
+					{
+						title: 'Shifts',
+						url: '/app/employee/shifts'
+					},
+					{
+						title: 'Manage Reservations',
+						url: '/app/employee/reservations'
+					}
+				]
+			});
+		}
+
+		return commonItems;
+	};
+
+	const navItems = generateNavigation();
+
 	return (
 		<Sidebar collapsible="icon" {...props}>
 			<SidebarHeader>
 				<h1>ActiveLife</h1>
 			</SidebarHeader>
 			<SidebarContent>
-				<NavMain items={data.navMain} />
+				<NavMain items={navItems} />
 			</SidebarContent>
 			<SidebarFooter>
-				<NavUser user={data.user} />
+				<NavUser />
 			</SidebarFooter>
 			<SidebarRail />
 		</Sidebar>
