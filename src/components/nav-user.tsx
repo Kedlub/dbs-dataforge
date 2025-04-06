@@ -48,7 +48,7 @@ export function NavUser() {
 					<SidebarMenuButton size="lg" asChild>
 						<Link href="/auth/login">
 							<div className="grid flex-1 text-left text-sm leading-tight">
-								<span className="truncate font-semibold">Sign In</span>
+								<span className="truncate font-semibold">Přihlásit se</span>
 							</div>
 						</Link>
 					</SidebarMenuButton>
@@ -137,13 +137,13 @@ export function NavUser() {
 							<DropdownMenuItem asChild>
 								<Link href="/app/profile">
 									<UserIcon className="mr-2 h-4 w-4" />
-									My Profile
+									Můj profil
 								</Link>
 							</DropdownMenuItem>
 							<DropdownMenuItem asChild>
 								<Link href="/app/reservations">
 									<Bell className="mr-2 h-4 w-4" />
-									My Reservations
+									Moje rezervace
 								</Link>
 							</DropdownMenuItem>
 						</DropdownMenuGroup>
@@ -169,7 +169,7 @@ export function NavUser() {
 									<DropdownMenuItem asChild>
 										<Link href="/app/employee">
 											<Users className="mr-2 h-4 w-4" />
-											Employee Portal
+											Portál zaměstnance
 										</Link>
 									</DropdownMenuItem>
 								</DropdownMenuGroup>
@@ -183,7 +183,7 @@ export function NavUser() {
 							className="text-destructive focus:text-destructive"
 						>
 							<LogOut className="mr-2 h-4 w-4" />
-							{isLoggingOut ? 'Signing out...' : 'Log out'}
+							{isLoggingOut ? 'Odhlašování...' : 'Odhlásit se'}
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>

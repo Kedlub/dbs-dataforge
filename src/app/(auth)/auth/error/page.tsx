@@ -8,42 +8,41 @@ export default function AuthErrorPage() {
 	const searchParams = useSearchParams();
 	const error = searchParams.get('error');
 
-	let errorMessage = 'An unknown error occurred during authentication.';
+	let errorMessage = 'Během ověřování došlo k neznámé chybě.';
 
 	// Map error codes to user-friendly messages
 	if (error === 'CredentialsSignin') {
-		errorMessage = 'Invalid email or password. Please try again.';
+		errorMessage = 'Neplatný email nebo heslo. Zkuste to prosím znovu.';
 	} else if (error === 'SessionRequired') {
-		errorMessage = 'You must be signed in to access this page.';
+		errorMessage = 'Pro přístup na tuto stránku musíte být přihlášeni.';
 	} else if (error === 'OAuthAccountNotLinked') {
 		errorMessage =
-			'To confirm your identity, sign in with the same account you used originally.';
+			'Pro potvrzení vaší identity se přihlaste stejným účtem, který jste použili původně.';
 	} else if (error === 'OAuthSignInFailed') {
 		errorMessage =
-			'Authentication with social login provider failed. Please try again.';
+			'Ověření pomocí sociálního přihlášení selhalo. Zkuste to prosím znovu.';
 	} else if (error === 'OAuthCallbackError') {
-		errorMessage = 'Social login callback error. Please try again.';
+		errorMessage =
+			'Chyba zpětného volání sociálního přihlášení. Zkuste to prosím znovu.';
 	} else if (error === 'EmailSignInFailed') {
 		errorMessage =
-			'The login link is invalid or has expired. Please try again.';
+			'Přihlašovací odkaz je neplatný nebo vypršel. Zkuste to prosím znovu.';
 	}
 
 	return (
 		<div className="flex min-h-screen items-center justify-center px-4 py-12">
 			<div className="bg-card w-full max-w-md space-y-6 rounded-lg border p-6 shadow-sm">
 				<div className="space-y-2 text-center">
-					<h1 className="text-destructive text-2xl font-bold">
-						Authentication Error
-					</h1>
+					<h1 className="text-destructive text-2xl font-bold">Chyba ověření</h1>
 					<p className="text-muted-foreground">{errorMessage}</p>
 				</div>
 
 				<div className="flex justify-center space-x-4 pt-4">
 					<Button asChild variant="outline">
-						<Link href="/auth/login">Return to Login</Link>
+						<Link href="/auth/login">Zpět na přihlášení</Link>
 					</Button>
 					<Button asChild>
-						<Link href="/">Back to Home</Link>
+						<Link href="/">Zpět na úvod</Link>
 					</Button>
 				</div>
 			</div>

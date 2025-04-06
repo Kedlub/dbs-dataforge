@@ -15,13 +15,13 @@ export default async function HomePage() {
 		<div className="flex min-h-screen flex-col">
 			<header className="border-border w-full border-b px-4 py-3">
 				<div className="container mx-auto flex items-center justify-between">
-					<h1 className="text-2xl font-bold">ActiveLife Sports Center</h1>
+					<h1 className="text-2xl font-bold">ActiveLife Sportovní Centrum</h1>
 					<div className="flex space-x-2">
 						<Button asChild variant="outline">
-							<Link href="/auth/login">Sign In</Link>
+							<Link href="/auth/login">Přihlásit se</Link>
 						</Button>
 						<Button asChild>
-							<Link href="/auth/register">Create Account</Link>
+							<Link href="/auth/register">Vytvořit účet</Link>
 						</Button>
 					</div>
 				</div>
@@ -30,18 +30,18 @@ export default async function HomePage() {
 			<main className="flex flex-1 flex-col items-center justify-center">
 				<div className="container mx-auto px-4 text-center">
 					<h1 className="text-4xl font-bold sm:text-5xl">
-						Welcome to ActiveLife Sports Center
+						Vítejte v ActiveLife Sportovním Centru
 					</h1>
 					<p className="text-muted-foreground mx-auto mt-4 max-w-3xl text-xl">
-						Join our community and easily book your favorite sports activities.
-						Sign in or create an account to get started.
+						Připojte se k naší komunitě a jednoduše si rezervujte své oblíbené
+						sportovní aktivity. Pro začátek se přihlaste nebo si vytvořte účet.
 					</p>
 					<div className="mt-8 flex justify-center space-x-4">
 						<Button asChild size="lg">
-							<Link href="/auth/login">Sign In</Link>
+							<Link href="/auth/login">Přihlásit se</Link>
 						</Button>
 						<Button asChild variant="outline" size="lg">
-							<Link href="/auth/register">Create Account</Link>
+							<Link href="/auth/register">Vytvořit účet</Link>
 						</Button>
 					</div>
 				</div>

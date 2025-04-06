@@ -31,14 +31,14 @@ export default function LoginPage() {
 			});
 
 			if (!result?.ok) {
-				setError('Invalid email or password');
+				setError('Neplatný email nebo heslo');
 				return;
 			}
 
 			router.push(callbackUrl);
 			router.refresh();
 		} catch (error) {
-			setError('Something went wrong. Please try again.');
+			setError('Něco se pokazilo. Zkuste to prosím znovu.');
 		} finally {
 			setLoading(false);
 		}

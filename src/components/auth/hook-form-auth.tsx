@@ -29,11 +29,9 @@ interface HookFormAuthProps {
 const loginSchema = z.object({
 	email: z
 		.string()
-		.min(1, { message: 'Email is required' })
-		.email({ message: 'Must be a valid email' }),
-	password: z
-		.string()
-		.min(6, { message: 'Password must be at least 6 characters' })
+		.min(1, { message: 'Email je povinný' })
+		.email({ message: 'Musí být platný email' }),
+	password: z.string().min(6, { message: 'Heslo musí mít alespoň 6 znaků' })
 });
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -42,17 +40,15 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 const registerSchema = z.object({
 	username: z
 		.string()
-		.min(3, { message: 'Username must be at least 3 characters' })
-		.max(20, { message: 'Username must be less than 20 characters' }),
-	firstName: z.string().min(1, { message: 'First name is required' }),
-	lastName: z.string().min(1, { message: 'Last name is required' }),
+		.min(3, { message: 'Uživatelské jméno musí mít alespoň 3 znaky' })
+		.max(20, { message: 'Uživatelské jméno musí mít méně než 20 znaků' }),
+	firstName: z.string().min(1, { message: 'Křestní jméno je povinné' }),
+	lastName: z.string().min(1, { message: 'Příjmení je povinné' }),
 	email: z
 		.string()
-		.min(1, { message: 'Email is required' })
-		.email({ message: 'Must be a valid email' }),
-	password: z
-		.string()
-		.min(6, { message: 'Password must be at least 6 characters' }),
+		.min(1, { message: 'Email je povinný' })
+		.email({ message: 'Musí být platný email' }),
+	password: z.string().min(6, { message: 'Heslo musí mít alespoň 6 znaků' }),
 	phone: z.string().optional()
 });
 
@@ -87,12 +83,12 @@ export function HookFormAuth({
 		<div className="bg-card w-full max-w-md space-y-6 rounded-lg border p-6 shadow-sm">
 			<div className="space-y-2 text-center">
 				<h1 className="text-2xl font-bold">
-					{isLogin ? 'Sign In' : 'Create Account'}
+					{isLogin ? 'Přihlášení' : 'Vytvoření účtu'}
 				</h1>
 				<p className="text-muted-foreground text-sm">
 					{isLogin
-						? 'Enter your credentials to access your account'
-						: 'Fill in the form below to create your account'}
+						? 'Zadejte své přihlašovací údaje pro přístup k vašemu účtu'
+						: 'Vyplňte formulář níže pro vytvoření vašeho účtu'}
 				</p>
 			</div>
 
@@ -111,7 +107,7 @@ export function HookFormAuth({
 								name="username"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel>Username</FormLabel>
+										<FormLabel>Uživatelské jméno</FormLabel>
 										<FormControl>
 											<Input
 												placeholder="johndoe"
@@ -130,10 +126,10 @@ export function HookFormAuth({
 									name="firstName"
 									render={({ field }) => (
 										<FormItem>
-											<FormLabel>First Name</FormLabel>
+											<FormLabel>Křestní jméno</FormLabel>
 											<FormControl>
 												<Input
-													placeholder="John"
+													placeholder="Jan"
 													{...field}
 													disabled={loading}
 												/>
@@ -148,10 +144,10 @@ export function HookFormAuth({
 									name="lastName"
 									render={({ field }) => (
 										<FormItem>
-											<FormLabel>Last Name</FormLabel>
+											<FormLabel>Příjmení</FormLabel>
 											<FormControl>
 												<Input
-													placeholder="Doe"
+													placeholder="Novák"
 													{...field}
 													disabled={loading}
 												/>
@@ -167,11 +163,11 @@ export function HookFormAuth({
 								name="phone"
 								render={({ field }) => (
 									<FormItem>
-										<FormLabel>Phone (Optional)</FormLabel>
+										<FormLabel>Telefon (Volitelné)</FormLabel>
 										<FormControl>
 											<Input
 												type="tel"
-												placeholder="+1 (555) 123-4567"
+												placeholder="+420 123 456 789"
 												{...field}
 												disabled={loading}
 											/>
@@ -192,7 +188,7 @@ export function HookFormAuth({
 								<FormControl>
 									<Input
 										type="email"
-										placeholder="john.doe@example.com"
+										placeholder="jan.novak@example.com"
 										autoComplete="email"
 										{...field}
 										disabled={loading}
@@ -209,7 +205,7 @@ export function HookFormAuth({
 						render={({ field }) => (
 							<FormItem>
 								<div className="flex items-center justify-between">
-									<FormLabel>Password</FormLabel>
+									<FormLabel>Heslo</FormLabel>
 									<Button
 										type="button"
 										variant="ghost"
@@ -238,7 +234,11 @@ export function HookFormAuth({
 					/>
 
 					<Button type="submit" className="w-full" disabled={loading}>
-						{loading ? 'Processing...' : isLogin ? 'Sign In' : 'Create Account'}
+						{loading
+							? 'Zpracování...'
+							: isLogin
+								? 'Přihlásit se'
+								: 'Vytvořit účet'}
 					</Button>
 				</form>
 			</Form>
@@ -247,7 +247,7 @@ export function HookFormAuth({
 				<Separator />
 				<div className="absolute inset-0 flex items-center justify-center">
 					<span className="bg-background text-muted-foreground px-2 text-xs">
-						OR
+						NEBO
 					</span>
 				</div>
 			</div>
@@ -255,22 +255,22 @@ export function HookFormAuth({
 			<div className="text-center text-sm">
 				{isLogin ? (
 					<>
-						Don't have an account?{' '}
+						Nemáte účet?{' '}
 						<Link
 							href="/auth/register"
 							className="text-primary font-semibold hover:underline"
 						>
-							Sign up
+							Registrovat se
 						</Link>
 					</>
 				) : (
 					<>
-						Already have an account?{' '}
+						Již máte účet?{' '}
 						<Link
 							href="/auth/login"
 							className="text-primary font-semibold hover:underline"
 						>
-							Sign in
+							Přihlásit se
 						</Link>
 					</>
 				)}

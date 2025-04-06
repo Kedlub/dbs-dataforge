@@ -40,7 +40,7 @@ export default function RegisterPage() {
 			const responseData = await response.json();
 
 			if (!response.ok) {
-				setError(responseData.message || 'Registration failed');
+				setError(responseData.message || 'Registrace se nezdařila');
 				return;
 			}
 
@@ -53,7 +53,7 @@ export default function RegisterPage() {
 
 			if (!result?.ok) {
 				setError(
-					"Registration successful, but couldn't sign in automatically. Please try signing in."
+					'Registrace proběhla úspěšně, ale automatické přihlášení se nezdařilo. Zkuste se přihlásit ručně.'
 				);
 				return;
 			}
@@ -61,7 +61,7 @@ export default function RegisterPage() {
 			router.push(callbackUrl);
 			router.refresh();
 		} catch (error) {
-			setError('Something went wrong. Please try again.');
+			setError('Něco se pokazilo. Zkuste to prosím znovu.');
 		} finally {
 			setLoading(false);
 		}

@@ -19,9 +19,9 @@ export default function LogoutPage() {
 	return (
 		<div className="flex min-h-screen flex-col items-center justify-center">
 			<div className="text-center">
-				<h1 className="text-2xl font-bold">Logging out...</h1>
+				<h1 className="text-2xl font-bold">Odhlašování...</h1>
 				<p className="text-muted-foreground mt-2">
-					Please wait while we sign you out.
+					Počkejte prosím, probíhá odhlašování.
 				</p>
 			</div>
 		</div>

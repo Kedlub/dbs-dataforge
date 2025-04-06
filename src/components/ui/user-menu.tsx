@@ -24,10 +24,10 @@ export function UserMenu() {
 		return (
 			<div className="flex space-x-2">
 				<Button asChild variant="outline" size="sm">
-					<Link href="/auth/login">Sign In</Link>
+					<Link href="/auth/login">Přihlásit se</Link>
 				</Button>
 				<Button asChild size="sm">
-					<Link href="/auth/register">Register</Link>
+					<Link href="/auth/register">Registrovat se</Link>
 				</Button>
 			</div>
 		);
@@ -70,18 +70,18 @@ export function UserMenu() {
 				</DropdownMenuItem>
 
 				<DropdownMenuItem asChild>
-					<Link href="/profile">My Profile</Link>
+					<Link href="/profile">Můj profil</Link>
 				</DropdownMenuItem>
 
 				<DropdownMenuItem asChild>
-					<Link href="/reservations">My Reservations</Link>
+					<Link href="/reservations">Moje rezervace</Link>
 				</DropdownMenuItem>
 
 				{isAdmin && (
 					<>
 						<DropdownMenuSeparator />
 						<DropdownMenuItem asChild>
-							<Link href="/admin">Administration</Link>
+							<Link href="/admin">Administrace</Link>
 						</DropdownMenuItem>
 					</>
 				)}
@@ -90,7 +90,7 @@ export function UserMenu() {
 					<>
 						<DropdownMenuSeparator />
 						<DropdownMenuItem asChild>
-							<Link href="/employee">Employee Portal</Link>
+							<Link href="/employee">Portál zaměstnance</Link>
 						</DropdownMenuItem>
 					</>
 				)}
@@ -101,7 +101,7 @@ export function UserMenu() {
 					disabled={isLoggingOut}
 					className="text-destructive focus:text-destructive"
 				>
-					{isLoggingOut ? 'Signing out...' : 'Sign out'}
+					{isLoggingOut ? 'Odhlašování...' : 'Odhlásit se'}
 				</DropdownMenuItem>
 			</DropdownMenuContent>
 		</DropdownMenu>
