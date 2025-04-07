@@ -1,4 +1,3 @@
 onlyBuiltDependencies:
   - bcrypt
   - sharp
-  - bcrypt
