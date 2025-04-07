@@ -53,7 +53,7 @@ async function seedActivities() {
 			},
 			{
 				name: 'Plavání - Trénink na dráhách',
-				description: 'Zaměřeno na kondični plavání v dráhách',
+				description: 'Zaměřeno na kondiční plavání v dráhách',
 				durationMinutes: 60,
 				price: 249,
 				maxParticipants: 16,
