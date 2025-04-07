@@ -168,8 +168,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
 	return (
 		<Sidebar collapsible="icon" {...props}>
-			<SidebarHeader>
-				<h1>ActiveLife Centrum</h1>
+			<SidebarHeader className="flex items-center justify-center">
+				<h1 className="truncate text-center font-bold transition-all group-data-[collapsible=icon]:text-xs group-data-[collapsible=icon]:opacity-0">
+					ActiveLife
+				</h1>
 			</SidebarHeader>
 			<SidebarContent>
 				<NavMain items={navItems} />
