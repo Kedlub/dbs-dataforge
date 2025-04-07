@@ -60,8 +60,11 @@ async function main() {
 	if (adminCount === 0) {
 		console.log('Creating default admin user...');
 
-		const hashedPassword = await hash('admin123', 10);
-
+		const defaultAdminPassword = process.env.DEFAULT_ADMIN_PASSWORD || 'admin123';
+		if (defaultAdminPassword === 'admin123') {
+			console.warn('Warning: Using default admin password. This should be changed in production.');
+		}
+		const hashedPassword = await hash(defaultAdminPassword, 10);
 		await prisma.user.create({
 			data: {
 				username: 'admin',
