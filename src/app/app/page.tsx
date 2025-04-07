@@ -9,7 +9,10 @@ import {
 	CardTitle
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Clock, Calendar, BookCheck, ArrowRight } from 'lucide-react';
+import { Clock, Calendar, BookCheck, ArrowRight, User } from 'lucide-react';
+import prisma from '@/lib/db';
+import { format } from 'date-fns';
+import { cs } from 'date-fns/locale';
 
 export default async function Dashboard() {
 	const user = await getCurrentUser();
@@ -18,23 +21,78 @@ export default async function Dashboard() {
 		return null; // Layout already handles redirect for unauthenticated users
 	}
 
-	// This would normally be fetched from database
-	const upcomingReservations = [
-		{
-			id: '1',
-			activity: 'Plavání',
-			facility: 'Bazén',
-			date: '2025-04-10',
-			time: '15:00 - 16:00'
+	// Fetch real upcoming reservations for the user
+	const upcomingReservations = await prisma.reservation.findMany({
+		where: {
+			userId: user.id,
+			status: 'confirmed',
+			timeSlot: {
+				startTime: {
+					gte: new Date()
+				}
+			}
 		},
-		{
-			id: '2',
-			activity: 'Basketbal',
-			facility: 'Kurt 2',
-			date: '2025-04-12',
-			time: '18:00 - 19:30'
+		include: {
+			activity: true,
+			timeSlot: {
+				include: {
+					facility: true
+				}
+			}
+		},
+		orderBy: {
+			timeSlot: {
+				startTime: 'asc'
+			}
+		},
+		take: 5
+	});
+
+	// Count available time slots for the next 7 days
+	const nextWeek = new Date();
+	nextWeek.setDate(nextWeek.getDate() + 7);
+
+	const availableTimeSlots = await prisma.timeSlot.count({
+		where: {
+			isAvailable: true,
+			startTime: {
+				gte: new Date(),
+				lte: nextWeek
+			}
 		}
-	];
+	});
+
+	// Count today's activities
+	const today = new Date();
+	const tomorrow = new Date(today);
+	tomorrow.setDate(tomorrow.getDate() + 1);
+	today.setHours(0, 0, 0, 0);
+	tomorrow.setHours(0, 0, 0, 0);
+
+	// Count unique facilities with activities today
+	const todayActivities = await prisma.timeSlot.findMany({
+		where: {
+			startTime: {
+				gte: today,
+				lt: tomorrow
+			}
+		},
+		select: {
+			facilityId: true
+		},
+		distinct: ['facilityId']
+	});
+
+	const todayActivitiesCount = todayActivities.length;
+
+	// Format reservations for display
+	const formattedReservations = upcomingReservations.map((reservation) => ({
+		id: reservation.id,
+		activity: reservation.activity.name,
+		facility: reservation.timeSlot.facility.name,
+		date: format(new Date(reservation.timeSlot.startTime), 'yyyy-MM-dd'),
+		time: `${format(new Date(reservation.timeSlot.startTime), 'HH:mm')} - ${format(new Date(reservation.timeSlot.endTime), 'HH:mm')}`
+	}));
 
 	return (
 		<div className="space-y-6">
@@ -52,11 +110,11 @@ export default async function Dashboard() {
 					</CardHeader>
 					<CardContent>
 						<div className="text-2xl font-bold">
-							{upcomingReservations.length}
+							{formattedReservations.length}
 						</div>
 						<p className="text-muted-foreground text-xs">
-							{upcomingReservations.length > 0
-								? `Další: ${upcomingReservations[0].activity} dne ${upcomingReservations[0].date}`
+							{formattedReservations.length > 0
+								? `Další: ${formattedReservations[0].activity} dne ${format(new Date(formattedReservations[0].date), 'd. MMMM', { locale: cs })}`
 								: 'Žádné nadcházející rezervace'}
 						</p>
 					</CardContent>
@@ -70,7 +128,9 @@ export default async function Dashboard() {
 						<Clock className="text-muted-foreground h-4 w-4" />
 					</CardHeader>
 					<CardContent>
-						<div className="text-2xl font-bold">25+</div>
+						<div className="text-2xl font-bold">
+							{availableTimeSlots > 25 ? '25+' : availableTimeSlots}
+						</div>
 						<p className="text-muted-foreground text-xs">Na příštích 7 dní</p>
 					</CardContent>
 				</Card>
@@ -83,7 +143,7 @@ export default async function Dashboard() {
 						<Calendar className="text-muted-foreground h-4 w-4" />
 					</CardHeader>
 					<CardContent>
-						<div className="text-2xl font-bold">12</div>
+						<div className="text-2xl font-bold">{todayActivitiesCount}</div>
 						<p className="text-muted-foreground text-xs">
 							Napříč všemi sportovišti
 						</p>
@@ -100,9 +160,9 @@ export default async function Dashboard() {
 						</CardDescription>
 					</CardHeader>
 					<CardContent>
-						{upcomingReservations.length > 0 ? (
+						{formattedReservations.length > 0 ? (
 							<div className="space-y-4">
-								{upcomingReservations.map((reservation) => (
+								{formattedReservations.map((reservation) => (
 									<div
 										key={reservation.id}
 										className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0"
@@ -114,7 +174,11 @@ export default async function Dashboard() {
 											</div>
 										</div>
 										<div className="text-right">
-											<div className="font-medium">{reservation.date}</div>
+											<div className="font-medium">
+												{format(new Date(reservation.date), 'd. MMMM yyyy', {
+													locale: cs
+												})}
+											</div>
 											<div className="text-muted-foreground text-sm">
 												{reservation.time}
 											</div>
@@ -145,21 +209,21 @@ export default async function Dashboard() {
 					</CardHeader>
 					<CardContent className="grid gap-2">
 						<Button asChild variant="outline" className="justify-start">
-							<Link href="/app/reservations/create">
+							<Link href="/app/facilities">
 								<BookCheck className="mr-2 h-4 w-4" />
 								Vytvořit novou rezervaci
 							</Link>
 						</Button>
 						<Button asChild variant="outline" className="justify-start">
-							<Link href="/profile">
-								<Clock className="mr-2 h-4 w-4" />
+							<Link href="/app/profile">
+								<User className="mr-2 h-4 w-4" />
 								Aktualizovat informace profilu
 							</Link>
 						</Button>
 						<Button asChild variant="outline" className="justify-start">
-							<Link href="/app/facilities">
+							<Link href="/app/reservations">
 								<Calendar className="mr-2 h-4 w-4" />
-								Prohlížet sportoviště
+								Zobrazit moje rezervace
 							</Link>
 						</Button>
 					</CardContent>
