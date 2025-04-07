@@ -44,7 +44,7 @@ export function FacilitiesList() {
 				const data = await response.json();
 				setFacilities(data);
 			} catch (err) {
-				setError('Error loading facilities. Please try again later.');
+				setError('Chyba při načítání sportovišť. Zkuste to prosím později.');
 				console.error('Error fetching facilities:', err);
 			} finally {
 				setLoading(false);
@@ -71,7 +71,7 @@ export function FacilitiesList() {
 						className="flex items-center gap-1 bg-green-600"
 					>
 						<CheckCircle2 className="h-3.5 w-3.5" />
-						<span>Active</span>
+						<span>Aktivní</span>
 					</Badge>
 				);
 			case 'maintenance':
@@ -81,14 +81,14 @@ export function FacilitiesList() {
 						className="flex items-center gap-1 bg-yellow-500 text-black"
 					>
 						<Clock className="h-3.5 w-3.5" />
-						<span>Maintenance</span>
+						<span>Údržba</span>
 					</Badge>
 				);
 			case 'closed':
 				return (
 					<Badge variant="destructive" className="flex items-center gap-1">
 						<AlertCircle className="h-3.5 w-3.5" />
-						<span>Closed</span>
+						<span>Zavřeno</span>
 					</Badge>
 				);
 			default:
@@ -133,19 +133,19 @@ export function FacilitiesList() {
 			<Table>
 				<TableHeader>
 					<TableRow>
-						<TableHead>Facility Name</TableHead>
-						<TableHead>Description</TableHead>
-						<TableHead className="text-center">Capacity</TableHead>
-						<TableHead className="text-center">Hours</TableHead>
-						<TableHead className="text-center">Status</TableHead>
-						<TableHead className="text-center">Actions</TableHead>
+						<TableHead>Název sportoviště</TableHead>
+						<TableHead>Popis</TableHead>
+						<TableHead className="text-center">Kapacita</TableHead>
+						<TableHead className="text-center">Otevírací doba</TableHead>
+						<TableHead className="text-center">Stav</TableHead>
+						<TableHead className="text-center">Akce</TableHead>
 					</TableRow>
 				</TableHeader>
 				<TableBody>
 					{facilities.length === 0 ? (
 						<TableRow>
 							<TableCell colSpan={6} className="h-24 text-center">
-								No facilities found
+								Nenalezena žádná sportoviště
 							</TableCell>
 						</TableRow>
 					) : (
@@ -168,12 +168,12 @@ export function FacilitiesList() {
 									facility.status.toLowerCase() === 'open' ? (
 										<Button variant="outline" size="sm" asChild>
 											<Link href={`/app/facilities/reserve/${facility.id}`}>
-												Reserve
+												Rezervovat
 											</Link>
 										</Button>
 									) : (
 										<Button variant="outline" size="sm" disabled>
-											Reserve
+											Rezervovat
 										</Button>
 									)}
 								</TableCell>

@@ -50,12 +50,12 @@ async function seedUsers() {
 		const demoUser = await prisma.user.create({
 			data: {
 				id: '00000000-0000-0000-0000-000000000000', // Demo user ID used in the reservation API
-				username: 'demouser',
+				username: 'testuživatel',
 				passwordHash: 'demo123', // Plain text for seed only; in production, use hashed passwords
-				firstName: 'Demo',
-				lastName: 'User',
-				email: 'demo@activelife.com',
-				phone: '+1234567890',
+				firstName: 'Test',
+				lastName: 'Uživatel',
+				email: 'test@activelife.cz',
+				phone: '+420123456789',
 				roleId: userRoleId
 			}
 		});
@@ -67,9 +67,9 @@ async function seedUsers() {
 				username: 'admin',
 				passwordHash: 'admin123', // Plain text for seed only
 				firstName: 'Admin',
-				lastName: 'User',
-				email: 'admin@activelife.com',
-				phone: '+1987654321',
+				lastName: 'Správce',
+				email: 'admin@activelife.cz',
+				phone: '+420987654321',
 				roleId: adminRoleId
 			}
 		});
@@ -78,18 +78,18 @@ async function seedUsers() {
 		const employeeUser = await prisma.user.create({
 			data: {
 				id: randomUUID(),
-				username: 'employee',
-				passwordHash: 'employee123', // Plain text for seed only
-				firstName: 'Employee',
-				lastName: 'User',
-				email: 'employee@activelife.com',
-				phone: '+1456789123',
+				username: 'zamestnanec',
+				passwordHash: 'zamestnanec123', // Plain text for seed only
+				firstName: 'Jan',
+				lastName: 'Novák',
+				email: 'zamestnanec@activelife.cz',
+				phone: '+420456789123',
 				roleId: employeeRoleId,
 				employee: {
 					create: {
-						position: 'Receptionist',
+						position: 'Recepční',
 						hireDate: new Date(),
-						employeeNumber: 'EMP001'
+						employeeNumber: 'ZAM001'
 					}
 				}
 			}
@@ -100,24 +100,24 @@ async function seedUsers() {
 			prisma.user.create({
 				data: {
 					id: randomUUID(),
-					username: 'johndoe',
-					passwordHash: 'password123', // Plain text for seed only
-					firstName: 'John',
-					lastName: 'Doe',
-					email: 'john@example.com',
-					phone: '+1122334455',
+					username: 'petrnovak',
+					passwordHash: 'heslo123', // Plain text for seed only
+					firstName: 'Petr',
+					lastName: 'Novák',
+					email: 'petr@example.cz',
+					phone: '+420112233445',
 					roleId: userRoleId
 				}
 			}),
 			prisma.user.create({
 				data: {
 					id: randomUUID(),
-					username: 'janedoe',
-					passwordHash: 'password123', // Plain text for seed only
-					firstName: 'Jane',
-					lastName: 'Doe',
-					email: 'jane@example.com',
-					phone: '+1555666777',
+					username: 'janasvobodova',
+					passwordHash: 'heslo123', // Plain text for seed only
+					firstName: 'Jana',
+					lastName: 'Svobodová',
+					email: 'jana@example.cz',
+					phone: '+420555666777',
 					roleId: userRoleId
 				}
 			})
@@ -142,17 +142,17 @@ async function seedRoles() {
 		{
 			id: randomUUID(),
 			name: 'admin',
-			description: 'Administrator with full access'
+			description: 'Administrátor s plným přístupem'
 		},
 		{
 			id: randomUUID(),
 			name: 'employee',
-			description: 'Staff member with operational access'
+			description: 'Zaměstnanec s provozním přístupem'
 		},
 		{
 			id: randomUUID(),
 			name: 'user',
-			description: 'Regular user with basic access'
+			description: 'Běžný uživatel se základním přístupem'
 		}
 	];
 

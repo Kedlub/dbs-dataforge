@@ -155,7 +155,7 @@ export function NavUser() {
 									<DropdownMenuItem asChild>
 										<Link href="/app/admin">
 											<Shield className="mr-2 h-4 w-4" />
-											Admin Dashboard
+											Admin Portál
 										</Link>
 									</DropdownMenuItem>
 								</DropdownMenuGroup>

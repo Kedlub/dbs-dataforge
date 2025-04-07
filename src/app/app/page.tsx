@@ -22,15 +22,15 @@ export default async function Dashboard() {
 	const upcomingReservations = [
 		{
 			id: '1',
-			activity: 'Swimming',
-			facility: 'Pool',
+			activity: 'Plavání',
+			facility: 'Bazén',
 			date: '2025-04-10',
 			time: '15:00 - 16:00'
 		},
 		{
 			id: '2',
-			activity: 'Basketball',
-			facility: 'Court 2',
+			activity: 'Basketbal',
+			facility: 'Kurt 2',
 			date: '2025-04-12',
 			time: '18:00 - 19:30'
 		}
@@ -46,7 +46,7 @@ export default async function Dashboard() {
 				<Card>
 					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 						<CardTitle className="text-sm font-medium">
-							Upcoming Reservations
+							Nadcházející rezervace
 						</CardTitle>
 						<BookCheck className="text-muted-foreground h-4 w-4" />
 					</CardHeader>
@@ -56,8 +56,8 @@ export default async function Dashboard() {
 						</div>
 						<p className="text-muted-foreground text-xs">
 							{upcomingReservations.length > 0
-								? `Next: ${upcomingReservations[0].activity} on ${upcomingReservations[0].date}`
-								: 'No upcoming reservations'}
+								? `Další: ${upcomingReservations[0].activity} dne ${upcomingReservations[0].date}`
+								: 'Žádné nadcházející rezervace'}
 						</p>
 					</CardContent>
 				</Card>
@@ -65,27 +65,27 @@ export default async function Dashboard() {
 				<Card>
 					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 						<CardTitle className="text-sm font-medium">
-							Time Slots Available
+							Dostupné časové sloty
 						</CardTitle>
 						<Clock className="text-muted-foreground h-4 w-4" />
 					</CardHeader>
 					<CardContent>
 						<div className="text-2xl font-bold">25+</div>
-						<p className="text-muted-foreground text-xs">For the next 7 days</p>
+						<p className="text-muted-foreground text-xs">Na příštích 7 dní</p>
 					</CardContent>
 				</Card>
 
 				<Card>
 					<CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
 						<CardTitle className="text-sm font-medium">
-							Today's Activities
+							Dnešní aktivity
 						</CardTitle>
 						<Calendar className="text-muted-foreground h-4 w-4" />
 					</CardHeader>
 					<CardContent>
 						<div className="text-2xl font-bold">12</div>
 						<p className="text-muted-foreground text-xs">
-							Across all facilities
+							Napříč všemi sportovišti
 						</p>
 					</CardContent>
 				</Card>
@@ -94,9 +94,9 @@ export default async function Dashboard() {
 			<div className="grid gap-4 md:grid-cols-2">
 				<Card>
 					<CardHeader>
-						<CardTitle>Upcoming Reservations</CardTitle>
+						<CardTitle>Nadcházející rezervace</CardTitle>
 						<CardDescription>
-							Your upcoming bookings at ActiveLife Center
+							Vaše nadcházející rezervace v centru ActiveLife
 						</CardDescription>
 					</CardHeader>
 					<CardContent>
@@ -124,14 +124,14 @@ export default async function Dashboard() {
 							</div>
 						) : (
 							<p className="text-muted-foreground">
-								No upcoming reservations found.
+								Nebyly nalezeny žádné nadcházející rezervace.
 							</p>
 						)}
 					</CardContent>
 					<CardFooter>
 						<Button asChild variant="outline" className="w-full">
 							<Link href="/app/reservations">
-								View All Reservations
+								Zobrazit všechny rezervace
 								<ArrowRight className="ml-2 h-4 w-4" />
 							</Link>
 						</Button>
@@ -140,26 +140,26 @@ export default async function Dashboard() {
 
 				<Card>
 					<CardHeader>
-						<CardTitle>Quick Actions</CardTitle>
-						<CardDescription>Common tasks for your account</CardDescription>
+						<CardTitle>Rychlé akce</CardTitle>
+						<CardDescription>Běžné úkoly pro váš účet</CardDescription>
 					</CardHeader>
 					<CardContent className="grid gap-2">
 						<Button asChild variant="outline" className="justify-start">
 							<Link href="/app/reservations/create">
 								<BookCheck className="mr-2 h-4 w-4" />
-								Create New Reservation
+								Vytvořit novou rezervaci
 							</Link>
 						</Button>
 						<Button asChild variant="outline" className="justify-start">
 							<Link href="/profile">
 								<Clock className="mr-2 h-4 w-4" />
-								Update Profile Information
+								Aktualizovat informace profilu
 							</Link>
 						</Button>
 						<Button asChild variant="outline" className="justify-start">
 							<Link href="/app/facilities">
 								<Calendar className="mr-2 h-4 w-4" />
-								Browse Facilities
+								Prohlížet sportoviště
 							</Link>
 						</Button>
 					</CardContent>

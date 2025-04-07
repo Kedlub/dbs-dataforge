@@ -36,8 +36,7 @@ async function seedFacilities() {
 	const facilitiesData: FacilityData[] = [
 		{
 			name: 'Main Swimming Pool',
-			description:
-				'Olympic-sized swimming pool with 8 lanes and diving platforms',
+			description: 'Olympijský bazén s 8 dráhami a skokanskými můstky',
 			capacity: 60,
 			status: 'active',
 			openingHour: 6, // 6 AM
@@ -46,7 +45,7 @@ async function seedFacilities() {
 		{
 			name: 'Tennis Courts',
 			description:
-				'4 professional-grade tennis courts with night lighting and spectator seating',
+				'4 profesionální tenisové kurty s večerním osvětlením a místy pro diváky',
 			capacity: 16,
 			status: 'active',
 			openingHour: 8, // 8 AM
@@ -55,7 +54,7 @@ async function seedFacilities() {
 		{
 			name: 'Main Fitness Center',
 			description:
-				'Modern gym with cardio and strength training equipment, free weights area',
+				'Moderní posilovna s kardio a silovými stroji, prostorem pro volné váhy',
 			capacity: 45,
 			status: 'active',
 			openingHour: 6, // 6 AM
@@ -64,7 +63,7 @@ async function seedFacilities() {
 		{
 			name: 'Basketball Court',
 			description:
-				'Full-size basketball court with professional flooring and spectator seating',
+				'Plnohodnotné basketbalové hřiště s profesionálním povrchem a tribunami',
 			capacity: 30,
 			status: 'active',
 			openingHour: 9, // 9 AM
@@ -73,7 +72,7 @@ async function seedFacilities() {
 		{
 			name: 'Yoga Studio',
 			description:
-				'Peaceful studio for yoga and pilates classes with bamboo flooring and props',
+				'Klidné studio pro jógu a pilates s bambusovou podlahou a pomůckami',
 			capacity: 25,
 			status: 'active',
 			openingHour: 7, // 7 AM
@@ -81,7 +80,7 @@ async function seedFacilities() {
 		},
 		{
 			name: 'Squash Courts',
-			description: '3 regulation squash courts with viewing gallery',
+			description: '3 standardní squashové kurty s pozorovací galerií',
 			capacity: 6,
 			status: 'maintenance',
 			openingHour: 8, // 8 AM
@@ -90,7 +89,7 @@ async function seedFacilities() {
 		{
 			name: 'Indoor Cycling Studio',
 			description:
-				'Dedicated spin studio with 20 professional bikes and immersive lighting',
+				'Specializované studio s 20 profesionálními koly a atmosférickým osvětlením',
 			capacity: 20,
 			status: 'active',
 			openingHour: 7, // 7 AM
@@ -99,7 +98,7 @@ async function seedFacilities() {
 		{
 			name: 'Multi-purpose Sports Hall',
 			description:
-				'Large sports hall suitable for volleyball, badminton, and indoor soccer',
+				'Velká sportovní hala vhodná pro volejbal, badminton a halový fotbal',
 			capacity: 50,
 			status: 'active',
 			openingHour: 8, // 8 AM
@@ -108,7 +107,7 @@ async function seedFacilities() {
 		{
 			name: 'Martial Arts Dojo',
 			description:
-				'Specialized space for martial arts with tatami flooring and training equipment',
+				'Specializovaný prostor pro bojová umění s tatami podlahou a tréninkovým vybavením',
 			capacity: 20,
 			status: 'active',
 			openingHour: 9, // 9 AM
@@ -116,7 +115,7 @@ async function seedFacilities() {
 		},
 		{
 			name: 'Outdoor Running Track',
-			description: '400m regulation running track with 8 lanes',
+			description: '400m běžecká dráha s 8 dráhami podle regulací',
 			capacity: 40,
 			status: 'closed',
 			openingHour: 6, // 6 AM
@@ -125,7 +124,7 @@ async function seedFacilities() {
 		{
 			name: 'Kids Play Area',
 			description:
-				'Supervised play area for children with climbing frames and soft play equipment',
+				'Hlídané hřiště pro děti s lezeckými konstrukcemi a měkkými herními prvky',
 			capacity: 15,
 			status: 'active',
 			openingHour: 9, // 9 AM
@@ -133,7 +132,7 @@ async function seedFacilities() {
 		},
 		{
 			name: 'Rehabilitation Center',
-			description: 'Specialized space for physical therapy and rehabilitation',
+			description: 'Specializované prostory pro fyzioterapii a rehabilitaci',
 			capacity: 10,
 			status: 'active',
 			openingHour: 8, // 8 AM

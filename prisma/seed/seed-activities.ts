@@ -43,120 +43,118 @@ async function seedActivities() {
 		// Prepare activities data
 		const activitiesData: ActivityData[] = [
 			{
-				name: 'Swimming - Open Session',
-				description: 'Regular swimming session for all skill levels',
+				name: 'Plavání - Volná plavba',
+				description: 'Běžné plavání pro všechny úrovně dovedností',
 				durationMinutes: 60,
-				price: 8.99,
+				price: 199,
 				maxParticipants: 30,
 				isActive: true,
 				facilityTypes: ['Main Swimming Pool']
 			},
 			{
-				name: 'Swimming - Lap Training',
-				description: 'Focused session for lap swimmers',
+				name: 'Plavání - Trénink na dráhách',
+				description: 'Zaměřeno na kondiční plavání v dráhách',
 				durationMinutes: 60,
-				price: 10.99,
+				price: 249,
 				maxParticipants: 16,
 				isActive: true,
 				facilityTypes: ['Main Swimming Pool']
 			},
 			{
-				name: 'Swimming Lessons - Beginner',
-				description: 'Learn basic swimming techniques',
+				name: 'Plavecké lekce - Začátečníci',
+				description: 'Naučte se základní plavecké techniky',
 				durationMinutes: 45,
-				price: 15.99,
+				price: 349,
 				maxParticipants: 8,
 				isActive: true,
 				facilityTypes: ['Main Swimming Pool']
 			},
 			{
-				name: 'Tennis - Singles',
-				description: 'Court booking for singles tennis',
+				name: 'Tenis - Dvouhra',
+				description: 'Rezervace kurtu pro tenisovou dvouhru',
 				durationMinutes: 60,
-				price: 12.99,
+				price: 299,
 				maxParticipants: 2,
 				isActive: true,
 				facilityTypes: ['Tennis Courts']
 			},
 			{
-				name: 'Tennis - Doubles',
-				description: 'Court booking for doubles tennis',
+				name: 'Tenis - Čtyřhra',
+				description: 'Rezervace kurtu pro tenisovou čtyřhru',
 				durationMinutes: 60,
-				price: 16.99,
+				price: 399,
 				maxParticipants: 4,
 				isActive: true,
 				facilityTypes: ['Tennis Courts']
 			},
 			{
-				name: 'Tennis Lessons',
-				description: 'Professional tennis coaching for all levels',
+				name: 'Tenisové lekce',
+				description: 'Profesionální tenisový trénink pro všechny úrovně',
 				durationMinutes: 60,
-				price: 24.99,
+				price: 599,
 				maxParticipants: 6,
 				isActive: true,
 				facilityTypes: ['Tennis Courts']
 			},
 			{
-				name: 'Gym - Full Access',
-				description: 'Full access to all gym equipment',
+				name: 'Posilovna - Plný přístup',
+				description: 'Plný přístup ke všem posilovacím strojům a vybavení',
 				durationMinutes: 120,
-				price: 9.99,
+				price: 229,
 				maxParticipants: 45,
 				isActive: true,
 				facilityTypes: ['Main Fitness Center']
 			},
 			{
-				name: 'Personal Training',
-				description: 'One-on-one personal training session',
+				name: 'Osobní trénink',
+				description: 'Individuální trénink s osobním trenérem',
 				durationMinutes: 60,
-				price: 39.99,
+				price: 899,
 				maxParticipants: 1,
 				isActive: true,
 				facilityTypes: ['Main Fitness Center']
 			},
 			{
-				name: 'Group Fitness Class',
-				description: 'High-intensity interval training in a group setting',
+				name: 'Skupinový fitness trénink',
+				description: 'Vysoce intenzivní intervalový trénink ve skupině',
 				durationMinutes: 45,
-				price: 12.99,
+				price: 299,
 				maxParticipants: 15,
 				isActive: true,
 				facilityTypes: ['Main Fitness Center', 'Multi-purpose Sports Hall']
 			},
 			{
-				name: 'Basketball - Full Court',
-				description: 'Full court booking for basketball games',
+				name: 'Basketbal - Celé hřiště',
+				description: 'Rezervace celého hřiště pro basketbalové zápasy',
 				durationMinutes: 60,
-				price: 19.99,
+				price: 499,
 				maxParticipants: 20,
 				isActive: true,
 				facilityTypes: ['Basketball Court']
 			},
 			{
-				name: 'Basketball - Half Court',
-				description: 'Half court booking for smaller games or practice',
+				name: 'Basketbal - Poloviční hřiště',
+				description: 'Rezervace poloviny hřiště pro menší hry nebo tréninky',
 				durationMinutes: 60,
-				price: 12.99,
+				price: 299,
 				maxParticipants: 10,
 				isActive: true,
 				facilityTypes: ['Basketball Court']
 			},
 			{
-				name: 'Yoga - Beginner',
-				description:
-					'Introduction to basic yoga poses and breathing techniques',
+				name: 'Jóga - Začátečníci',
+				description: 'Úvod do základních jógových pozic a dechových technik',
 				durationMinutes: 60,
-				price: 12.99,
+				price: 299,
 				maxParticipants: 20,
 				isActive: true,
 				facilityTypes: ['Yoga Studio']
 			},
 			{
-				name: 'Yoga - Advanced',
-				description:
-					'Complex poses and sequences for experienced practitioners',
+				name: 'Jóga - Pokročilí',
+				description: 'Složitější pozice a sekvence pro zkušené praktikanty',
 				durationMinutes: 75,
-				price: 14.99,
+				price: 349,
 				maxParticipants: 15,
 				isActive: true,
 				facilityTypes: ['Yoga Studio']
@@ -164,90 +162,90 @@ async function seedActivities() {
 			{
 				name: 'Pilates',
 				description:
-					'Core-strengthening exercises focusing on alignment and control',
+					'Cvičení zaměřené na posílení středu těla, držení a kontrolu',
 				durationMinutes: 60,
-				price: 13.99,
+				price: 329,
 				maxParticipants: 12,
 				isActive: true,
 				facilityTypes: ['Yoga Studio']
 			},
 			{
-				name: 'Squash - Court Booking',
-				description: 'Court booking for squash games',
+				name: 'Squash - Rezervace kurtu',
+				description: 'Rezervace kurtu pro squash',
 				durationMinutes: 45,
-				price: 9.99,
+				price: 229,
 				maxParticipants: 2,
 				isActive: false, // Currently inactive due to maintenance
 				facilityTypes: ['Squash Courts']
 			},
 			{
-				name: 'Indoor Cycling',
-				description: 'High-energy indoor cycling class with music',
+				name: 'Indoor cycling',
+				description: 'Energický indoor cycling s hudbou',
 				durationMinutes: 45,
-				price: 10.99,
+				price: 249,
 				maxParticipants: 20,
 				isActive: true,
 				facilityTypes: ['Indoor Cycling Studio']
 			},
 			{
 				name: 'Badminton',
-				description: 'Court booking for badminton games',
+				description: 'Rezervace kurtu pro badminton',
 				durationMinutes: 60,
-				price: 8.99,
+				price: 199,
 				maxParticipants: 4,
 				isActive: true,
 				facilityTypes: ['Multi-purpose Sports Hall']
 			},
 			{
-				name: 'Volleyball',
-				description: 'Court booking for volleyball games',
+				name: 'Volejbal',
+				description: 'Rezervace kurtu pro volejbal',
 				durationMinutes: 60,
-				price: 15.99,
+				price: 399,
 				maxParticipants: 12,
 				isActive: true,
 				facilityTypes: ['Multi-purpose Sports Hall']
 			},
 			{
-				name: 'Martial Arts - Karate',
-				description: 'Karate training for all levels',
+				name: 'Bojové umění - Karate',
+				description: 'Trénink karate pro všechny úrovně',
 				durationMinutes: 60,
-				price: 11.99,
+				price: 279,
 				maxParticipants: 15,
 				isActive: true,
 				facilityTypes: ['Martial Arts Dojo']
 			},
 			{
-				name: 'Martial Arts - Judo',
-				description: 'Judo training for all levels',
+				name: 'Bojové umění - Judo',
+				description: 'Trénink juda pro všechny úrovně',
 				durationMinutes: 60,
-				price: 11.99,
+				price: 279,
 				maxParticipants: 12,
 				isActive: true,
 				facilityTypes: ['Martial Arts Dojo']
 			},
 			{
-				name: 'Track - Running',
-				description: 'Access to the running track for training',
+				name: 'Dráha - Běhání',
+				description: 'Přístup na běžeckou dráhu pro trénink',
 				durationMinutes: 60,
-				price: 5.99,
+				price: 149,
 				maxParticipants: 40,
 				isActive: false, // Currently inactive due to weather
 				facilityTypes: ['Outdoor Running Track']
 			},
 			{
-				name: 'Kids Play Session',
-				description: 'Supervised play session for children',
+				name: 'Dětský koutek',
+				description: 'Hlídaná herna pro děti',
 				durationMinutes: 60,
-				price: 7.99,
+				price: 199,
 				maxParticipants: 15,
 				isActive: true,
 				facilityTypes: ['Kids Play Area']
 			},
 			{
-				name: 'Rehabilitation Session',
-				description: 'Guided rehabilitation exercises',
+				name: 'Rehabilitační cvičení',
+				description: 'Individuální rehabilitační cvičení s odborníkem',
 				durationMinutes: 45,
-				price: 29.99,
+				price: 699,
 				maxParticipants: 1,
 				isActive: true,
 				facilityTypes: ['Rehabilitation Center']

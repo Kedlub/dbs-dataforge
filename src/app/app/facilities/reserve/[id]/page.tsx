@@ -61,7 +61,9 @@ export default function ReserveFacilityPage() {
 				const data = await response.json();
 				setFacility(data);
 			} catch (err) {
-				setError('Error loading facility details. Please try again later.');
+				setError(
+					'Chyba při načítání detailů sportoviště. Zkuste to prosím později.'
+				);
 				console.error('Error fetching facility:', err);
 			} finally {
 				setIsLoading(false);
@@ -126,9 +128,7 @@ export default function ReserveFacilityPage() {
 
 	const handleSubmit = async () => {
 		if (!selectedDate || !selectedTime || !selectedActivity) {
-			setError(
-				'Please select a date, time, and activity for your reservation.'
-			);
+			setError('Vyberte prosím datum, čas a aktivitu pro vaši rezervaci.');
 			return;
 		}
 
@@ -157,7 +157,7 @@ export default function ReserveFacilityPage() {
 
 			if (!response.ok) {
 				const data = await response.json();
-				throw new Error(data.error || 'Failed to create reservation');
+				throw new Error(data.error || 'Vytvoření rezervace se nezdařilo');
 			}
 
 			setSuccess(true);
@@ -167,9 +167,7 @@ export default function ReserveFacilityPage() {
 				router.push('/app/reservations');
 			}, 2000);
 		} catch (err: any) {
-			setError(
-				err.message || 'An error occurred while creating your reservation.'
-			);
+			setError(err.message || 'Při vytváření vaší rezervace došlo k chybě.');
 			console.error('Error creating reservation:', err);
 		} finally {
 			setIsSubmitting(false);
@@ -181,7 +179,7 @@ export default function ReserveFacilityPage() {
 			<div className="container flex h-[50vh] items-center justify-center">
 				<div className="flex flex-col items-center space-y-4">
 					<Loader2 className="text-primary h-8 w-8 animate-spin" />
-					<p>Loading facility details...</p>
+					<p>Načítání detailů sportoviště...</p>
 				</div>
 			</div>
 		);
@@ -192,13 +190,13 @@ export default function ReserveFacilityPage() {
 			<div className="container px-4 py-6 md:px-6 md:py-8 lg:py-10">
 				<Card className="border-destructive">
 					<CardHeader>
-						<CardTitle className="text-destructive">Error</CardTitle>
+						<CardTitle className="text-destructive">Chyba</CardTitle>
 					</CardHeader>
 					<CardContent>
 						<p>{error}</p>
 					</CardContent>
 					<CardFooter>
-						<Button onClick={() => router.back()}>Go Back</Button>
+						<Button onClick={() => router.back()}>Zpět</Button>
 					</CardFooter>
 				</Card>
 			</div>
@@ -212,13 +210,13 @@ export default function ReserveFacilityPage() {
 					<CardHeader>
 						<CardTitle className="flex items-center gap-2 text-green-600">
 							<CheckCircle2 className="h-5 w-5" />
-							Reservation Successful
+							Rezervace byla úspěšná
 						</CardTitle>
 					</CardHeader>
 					<CardContent>
 						<p>
-							Your reservation has been created successfully! Redirecting to
-							your reservations...
+							Vaše rezervace byla úspěšně vytvořena! Přesměrování na vaše
+							rezervace...
 						</p>
 					</CardContent>
 				</Card>
@@ -231,10 +229,10 @@ export default function ReserveFacilityPage() {
 			<div className="flex flex-col gap-6">
 				<div>
 					<h1 className="scroll-m-20 text-3xl font-semibold tracking-tight">
-						Reserve Facility
+						Rezervace sportoviště
 					</h1>
 					<p className="text-muted-foreground">
-						Create a new reservation for {facility?.name}
+						Vytvořit novou rezervaci pro {facility?.name}
 					</p>
 				</div>
 
@@ -252,7 +250,7 @@ export default function ReserveFacilityPage() {
 							)}
 
 							<div className="space-y-2">
-								<Label htmlFor="date">Date</Label>
+								<Label htmlFor="date">Datum</Label>
 								<Popover>
 									<PopoverTrigger asChild>
 										<Button
@@ -266,7 +264,7 @@ export default function ReserveFacilityPage() {
 											{selectedDate ? (
 												format(selectedDate, 'PPP')
 											) : (
-												<span>Select date</span>
+												<span>Vyberte datum</span>
 											)}
 										</Button>
 									</PopoverTrigger>
@@ -286,14 +284,14 @@ export default function ReserveFacilityPage() {
 							</div>
 
 							<div className="space-y-2">
-								<Label htmlFor="time">Time Slot</Label>
+								<Label htmlFor="time">Časový slot</Label>
 								<Select
 									value={selectedTime}
 									onValueChange={setSelectedTime}
 									disabled={!selectedDate || availableTimeSlots.length === 0}
 								>
 									<SelectTrigger id="time" className="w-full">
-										<SelectValue placeholder="Select time" />
+										<SelectValue placeholder="Vyberte čas" />
 									</SelectTrigger>
 									<SelectContent>
 										{availableTimeSlots.length > 0 ? (
@@ -305,8 +303,8 @@ export default function ReserveFacilityPage() {
 										) : (
 											<SelectItem value="none" disabled>
 												{selectedDate
-													? 'No available slots for this date'
-													: 'Select a date first'}
+													? 'Pro tento den nejsou k dispozici žádné sloty'
+													: 'Nejprve vyberte datum'}
 											</SelectItem>
 										)}
 									</SelectContent>
@@ -314,14 +312,14 @@ export default function ReserveFacilityPage() {
 							</div>
 
 							<div className="space-y-2">
-								<Label htmlFor="activity">Activity</Label>
+								<Label htmlFor="activity">Aktivita</Label>
 								<Select
 									value={selectedActivity}
 									onValueChange={setSelectedActivity}
 									disabled={activities.length === 0}
 								>
 									<SelectTrigger id="activity" className="w-full">
-										<SelectValue placeholder="Select activity" />
+										<SelectValue placeholder="Vyberte aktivitu" />
 									</SelectTrigger>
 									<SelectContent>
 										{activities.length > 0 ? (
@@ -332,7 +330,7 @@ export default function ReserveFacilityPage() {
 											))
 										) : (
 											<SelectItem value="none" disabled>
-												No activities available
+												Žádné aktivity nejsou k dispozici
 											</SelectItem>
 										)}
 									</SelectContent>
@@ -342,7 +340,7 @@ export default function ReserveFacilityPage() {
 					</CardContent>
 					<CardFooter className="flex justify-between">
 						<Button variant="outline" onClick={() => router.back()}>
-							Cancel
+							Zrušit
 						</Button>
 						<Button
 							onClick={handleSubmit}
@@ -356,10 +354,10 @@ export default function ReserveFacilityPage() {
 							{isSubmitting ? (
 								<>
 									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-									Creating...
+									Vytváření...
 								</>
 							) : (
-								'Create Reservation'
+								'Vytvořit rezervaci'
 							)}
 						</Button>
 					</CardFooter>

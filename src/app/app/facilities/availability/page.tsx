@@ -8,9 +8,9 @@ import {
 } from '@/components/ui/card';
 
 export const metadata: Metadata = {
-	title: 'Facility Availability | ActiveLife',
+	title: 'Dostupnost sportovišť | ActiveLife',
 	description:
-		'Check the current availability of sports facilities at ActiveLife sports center'
+		'Zkontrolujte aktuální dostupnost sportovišť v sportovním centru ActiveLife'
 };
 
 export default function FacilityAvailabilityPage() {
@@ -19,24 +19,24 @@ export default function FacilityAvailabilityPage() {
 			<div className="flex flex-col gap-6">
 				<div>
 					<h1 className="scroll-m-20 text-3xl font-semibold tracking-tight">
-						Facility Availability
+						Dostupnost sportovišť
 					</h1>
 					<p className="text-muted-foreground">
-						Check the current availability of our sports facilities
+						Zkontrolujte aktuální dostupnost našich sportovišť
 					</p>
 				</div>
 
 				<Card>
 					<CardHeader>
-						<CardTitle>Real-time Availability</CardTitle>
+						<CardTitle>Dostupnost v reálném čase</CardTitle>
 						<CardDescription>
-							View which facilities are currently available and their upcoming
-							schedule
+							Podívejte se, která sportoviště jsou momentálně k dispozici a
+							jejich nadcházející rozvrh
 						</CardDescription>
 					</CardHeader>
 					<CardContent>
 						{/* Availability calendar or schedule component will go here */}
-						<p>Coming soon: Real-time availability checker</p>
+						<p>Připravujeme: Kontrola dostupnosti v reálném čase</p>
 					</CardContent>
 				</Card>
 			</div>

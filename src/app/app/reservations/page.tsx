@@ -44,7 +44,7 @@ export default function MyReservations() {
 			const data = await response.json();
 			setReservations(data);
 		} catch (err) {
-			setError('Failed to load reservations. Please try again.');
+			setError('Nepodařilo se načíst rezervace. Zkuste to prosím znovu.');
 			console.error(err);
 		} finally {
 			setIsLoading(false);
@@ -60,13 +60,13 @@ export default function MyReservations() {
 			case 'confirmed':
 				return (
 					<Badge className="bg-green-500 hover:bg-green-600">
-						<Check className="mr-1 h-3 w-3" /> Confirmed
+						<Check className="mr-1 h-3 w-3" /> Potvrzeno
 					</Badge>
 				);
 			case 'cancelled':
 				return (
 					<Badge variant="destructive">
-						<CalendarX className="mr-1 h-3 w-3" /> Cancelled
+						<CalendarX className="mr-1 h-3 w-3" /> Zrušeno
 					</Badge>
 				);
 			case 'pending':
@@ -75,7 +75,7 @@ export default function MyReservations() {
 						variant="outline"
 						className="border-yellow-500 text-yellow-500"
 					>
-						<Loader2 className="mr-1 h-3 w-3 animate-spin" /> Pending
+						<Loader2 className="mr-1 h-3 w-3 animate-spin" /> Čeká na schválení
 					</Badge>
 				);
 			default:
@@ -100,7 +100,7 @@ export default function MyReservations() {
 				},
 				body: JSON.stringify({
 					status: 'cancelled',
-					cancellationReason: 'Cancelled by user'
+					cancellationReason: 'Zrušeno uživatelem'
 				})
 			});
 
@@ -115,13 +115,13 @@ export default function MyReservations() {
 						? {
 								...reservation,
 								status: 'cancelled',
-								cancellationReason: 'Cancelled by user'
+								cancellationReason: 'Zrušeno uživatelem'
 							}
 						: reservation
 				)
 			);
 		} catch (err) {
-			setError('Failed to cancel reservation. Please try again.');
+			setError('Nepodařilo se zrušit rezervaci. Zkuste to prosím znovu.');
 			console.error(err);
 		} finally {
 			setIsCancelling(false);
@@ -136,10 +136,10 @@ export default function MyReservations() {
 				<div className="flex items-center justify-between">
 					<div>
 						<h1 className="scroll-m-20 text-3xl font-semibold tracking-tight">
-							My Reservations
+							Moje rezervace
 						</h1>
 						<p className="text-muted-foreground">
-							View and manage your upcoming and past reservations
+							Zobrazte a spravujte své nadcházející i minulé rezervace
 						</p>
 					</div>
 					<Button
@@ -150,14 +150,14 @@ export default function MyReservations() {
 						<RefreshCw
 							className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`}
 						/>
-						Refresh
+						Obnovit
 					</Button>
 				</div>
 
 				{isLoading && (
 					<div className="flex items-center justify-center py-10">
 						<Loader2 className="h-8 w-8 animate-spin" />
-						<span className="ml-2">Loading reservations...</span>
+						<span className="ml-2">Načítání rezervací...</span>
 					</div>
 				)}
 
@@ -170,9 +170,9 @@ export default function MyReservations() {
 				{!isLoading && !error && reservations.length === 0 && (
 					<div className="rounded-lg border py-10 text-center">
 						<CalendarX className="text-muted-foreground mx-auto mb-3 h-12 w-12" />
-						<h3 className="text-lg font-medium">No reservations found</h3>
+						<h3 className="text-lg font-medium">Žádné rezervace nenalezeny</h3>
 						<p className="text-muted-foreground mt-1">
-							You don't have any reservations yet
+							Zatím nemáte žádné rezervace
 						</p>
 					</div>
 				)}
@@ -183,19 +183,19 @@ export default function MyReservations() {
 							<CardHeader>
 								<div className="flex items-start justify-between">
 									<CardTitle className="text-lg font-medium">
-										{reservation.activity?.name || 'Activity'}
+										{reservation.activity?.name || 'Aktivita'}
 									</CardTitle>
 									{getStatusBadge(reservation.status)}
 								</div>
 								<CardDescription>
-									Booked on{' '}
+									Rezervováno dne{' '}
 									{format(new Date(reservation.createdAt), 'MMM d, yyyy')}
 								</CardDescription>
 							</CardHeader>
 							<CardContent>
 								<div className="space-y-3">
 									<div>
-										<p className="text-sm font-medium">Time Slot</p>
+										<p className="text-sm font-medium">Časový slot</p>
 										<p className="text-muted-foreground text-sm">
 											{reservation.timeSlot ? (
 												<>
@@ -211,15 +211,15 @@ export default function MyReservations() {
 													-{format(new Date(reservation.timeSlot.endTime), 'p')}
 												</>
 											) : (
-												'Time information not available'
+												'Časové informace nejsou k dispozici'
 											)}
 										</p>
 									</div>
 									<div>
-										<p className="text-sm font-medium">Price</p>
+										<p className="text-sm font-medium">Cena</p>
 										<p className="text-muted-foreground text-sm">
-											$
-											{parseFloat(reservation.totalPrice.toString()).toFixed(2)}
+											{parseFloat(reservation.totalPrice.toString()).toFixed(2)}{' '}
+											Kč
 										</p>
 									</div>
 								</div>
@@ -231,13 +231,13 @@ export default function MyReservations() {
 										onClick={() => openCancelDialog(reservation.id)}
 										className="w-full"
 									>
-										Cancel Reservation
+										Zrušit rezervaci
 									</Button>
 								)}
 								{reservation.status.toLowerCase() === 'cancelled' &&
 									reservation.cancellationReason && (
 										<div className="text-muted-foreground w-full text-sm">
-											<span className="font-medium">Cancellation reason:</span>{' '}
+											<span className="font-medium">Důvod zrušení:</span>{' '}
 											{reservation.cancellationReason}
 										</div>
 									)}
@@ -250,15 +250,14 @@ export default function MyReservations() {
 			<AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
 				<AlertDialogContent>
 					<AlertDialogHeader>
-						<AlertDialogTitle>Cancel Reservation</AlertDialogTitle>
+						<AlertDialogTitle>Zrušit rezervaci</AlertDialogTitle>
 						<AlertDialogDescription>
-							Are you sure you want to cancel this reservation? This action
-							cannot be undone.
+							Opravdu chcete zrušit tuto rezervaci? Tuto akci nelze vzít zpět.
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
 						<AlertDialogCancel disabled={isCancelling}>
-							Nevermind
+							Rozmyslel jsem si to
 						</AlertDialogCancel>
 						<AlertDialogAction
 							onClick={cancelReservation}
@@ -268,10 +267,10 @@ export default function MyReservations() {
 							{isCancelling ? (
 								<>
 									<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-									Cancelling...
+									Rušení...
 								</>
 							) : (
-								'Yes, Cancel'
+								'Ano, zrušit'
 							)}
 						</AlertDialogAction>
 					</AlertDialogFooter>

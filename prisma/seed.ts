@@ -14,15 +14,15 @@ async function createDefaultRoles() {
 	const roles = [
 		{
 			name: 'ADMIN',
-			description: 'Administrator with full access'
+			description: 'Administrátor s plným přístupem'
 		},
 		{
 			name: 'EMPLOYEE',
-			description: 'Employee with management privileges'
+			description: 'Zaměstnanec s rozšířenými oprávněními'
 		},
 		{
 			name: 'USER',
-			description: 'Regular user with basic privileges'
+			description: 'Běžný uživatel se základními oprávněními'
 		}
 	];
 
@@ -81,9 +81,9 @@ async function createDefaultAdmin() {
 			data: {
 				username: 'admin',
 				passwordHash: hashedPassword,
-				email: 'admin@example.com',
+				email: 'admin@example.cz',
 				firstName: 'Admin',
-				lastName: 'User',
+				lastName: 'Správce',
 				roleId: adminRole.id
 			}
 		});

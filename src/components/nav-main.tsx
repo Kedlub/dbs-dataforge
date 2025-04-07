@@ -35,7 +35,7 @@ export function NavMain({
 }) {
 	return (
 		<SidebarGroup>
-			<SidebarGroupLabel>ActiveLife</SidebarGroupLabel>
+			<SidebarGroupLabel>ActiveLife Centrum</SidebarGroupLabel>
 			<SidebarMenu>
 				{items.map((item) => {
 					// Check if the item has child items
@@ -76,9 +76,9 @@ export function NavMain({
 										{item.items?.map((subItem) => (
 											<SidebarMenuSubItem key={subItem.title}>
 												<SidebarMenuSubButton asChild>
-													<a href={subItem.url}>
+													<Link href={subItem.url}>
 														<span>{subItem.title}</span>
-													</a>
+													</Link>
 												</SidebarMenuSubButton>
 											</SidebarMenuSubItem>
 										))}
