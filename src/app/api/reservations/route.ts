@@ -1,14 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { addHours } from 'date-fns';
-
-// Temporary user ID for demo purposes - would normally come from auth
-const DEMO_USER_ID = '00000000-0000-0000-0000-000000000000';
+import { getAuthSession } from '@/lib/auth';
 
 export async function GET(request: NextRequest) {
 	try {
+		const session = await getAuthSession();
 		const searchParams = request.nextUrl.searchParams;
-		const userId = searchParams.get('userId') || DEMO_USER_ID;
+
+		// Use userId from query params only for admins/employees, otherwise use the authenticated user's ID
+		let userId = searchParams.get('userId');
+
+		if (!session?.user) {
+			return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 });
+		}
+
+		// If user is not admin/employee and tries to access other user's reservations, restrict to their own
+		if (
+			userId &&
+			userId !== session.user.id &&
+			session.user.role !== 'admin' &&
+			session.user.role !== 'employee'
+		) {
+			userId = session.user.id;
+		}
+
+		// If no userId specified, use the authenticated user's ID
+		if (!userId) {
+			userId = session.user.id;
+		}
 
 		const reservations = await prisma.reservation.findMany({
 			where: {
@@ -35,6 +55,12 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
 	try {
+		const session = await getAuthSession();
+
+		if (!session?.user) {
+			return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 });
+		}
+
 		const data = await request.json();
 		const { facilityId, activityId, startTime } = data;
 
@@ -132,10 +158,10 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
-		// Create the reservation
+		// Create the reservation with the authenticated user's ID
 		const reservation = await prisma.reservation.create({
 			data: {
-				userId: DEMO_USER_ID, // Would normally use authenticated user's ID
+				userId: session.user.id,
 				slotId: timeSlot.id,
 				activityId: activityId,
 				status: 'confirmed',
