@@ -10,3 +10,5 @@ alwaysApply: true
 - The project uses Typescript.
 - Project uses PNPM as a package manager.
 - All Typescript types should be in src/lib/types.ts
+- Use sonner for toast notifications.
+- Make the UI in Czech.
