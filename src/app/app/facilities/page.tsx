@@ -11,9 +11,9 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { CalendarIcon } from 'lucide-react';
 
 export const metadata: Metadata = {
-	title: 'Sports Facilities | ActiveLife',
+	title: 'Sportoviště | ActiveLife',
 	description:
-		'Browse all available sports facilities at ActiveLife sports center'
+		'Prohlížejte všechna dostupná sportoviště v sportovním centru ActiveLife'
 };
 
 export default function FacilitiesPage() {
@@ -22,29 +22,29 @@ export default function FacilitiesPage() {
 			<div className="flex flex-col gap-6">
 				<div>
 					<h1 className="scroll-m-20 text-3xl font-semibold tracking-tight">
-						Sports Facilities
+						Sportoviště
 					</h1>
 					<p className="text-muted-foreground">
-						Browse all available sports facilities at our center
+						Prohlížejte všechna dostupná sportoviště v našem centru
 					</p>
 				</div>
 
 				<Alert className="bg-blue-50 dark:bg-blue-950/50">
 					<CalendarIcon className="h-4 w-4" />
-					<AlertTitle>Reservation Instructions</AlertTitle>
+					<AlertTitle>Pokyny k rezervaci</AlertTitle>
 					<AlertDescription>
-						To make a reservation, click the "Reserve" button next to an active
-						facility. You'll be able to select a date, time slot, and activity
-						for your reservation.
+						Pro vytvoření rezervace klikněte na tlačítko "Rezervovat" u
+						aktivního sportoviště. Poté budete moci vybrat datum, časový slot a
+						aktivitu pro svou rezervaci.
 					</AlertDescription>
 				</Alert>
 
 				<Card>
 					<CardHeader>
-						<CardTitle>Available Facilities</CardTitle>
+						<CardTitle>Dostupná sportoviště</CardTitle>
 						<CardDescription>
-							View details about our sports facilities, their capacity, and
-							current status
+							Prohlédněte si detaily o našich sportovištích, jejich kapacitě a
+							aktuálním stavu
 						</CardDescription>
 					</CardHeader>
 					<CardContent>
