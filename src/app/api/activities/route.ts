@@ -8,17 +8,52 @@ export async function GET(request: NextRequest) {
 
 		// If facilityId is provided, get activities for that facility
 		if (facilityId) {
+			console.log(`Searching for activities with facilityId: ${facilityId}`);
+
+			// First, find the facility to get its name
+			const facility = await prisma.facility.findUnique({
+				where: { id: facilityId }
+			});
+
+			if (!facility) {
+				console.log(`No facility found with ID: ${facilityId}`);
+				return NextResponse.json([]);
+			}
+
+			console.log(`Found facility: ${facility.name} (${facility.id})`);
+
+			// Find all facilities with the same name (due to potential duplicates)
+			const allFacilitiesWithSameName = await prisma.facility.findMany({
+				where: { name: facility.name }
+			});
+
+			const facilityIds = allFacilitiesWithSameName.map((f) => f.id);
+			console.log(
+				`Found ${facilityIds.length} facilities with name "${facility.name}"`
+			);
+
+			// Find facility-activity relations for all of these facilities
 			const facilityActivities = await prisma.facilityActivity.findMany({
 				where: {
-					facilityId: facilityId
+					facilityId: { in: facilityIds }
 				},
 				include: {
 					activity: true
 				}
 			});
 
-			// Extract the activities from the facility-activity relation
-			const activities = facilityActivities.map((fa) => fa.activity);
+			console.log(
+				`Found ${facilityActivities.length} facility-activity relations`
+			);
+
+			// Extract unique activities (in case of duplicates)
+			const activityMap = new Map();
+			facilityActivities.forEach((fa) => {
+				activityMap.set(fa.activity.id, fa.activity);
+			});
+
+			const activities = Array.from(activityMap.values());
+			console.log(`Returning ${activities.length} unique activities`);
 
 			return NextResponse.json(activities);
 		}

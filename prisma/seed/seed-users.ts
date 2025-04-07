@@ -18,13 +18,20 @@ async function seedUsers() {
 			console.log('Deleted existing employees');
 		}
 
+		// Delete existing reservations first due to foreign key constraints
+		const reservationCount = await prisma.reservation.count();
+		if (reservationCount > 0) {
+			await prisma.reservation.deleteMany({});
+			console.log('Deleted existing reservations');
+		}
+
 		// Delete existing users
 		const count = await prisma.user.count();
 		if (count > 0) {
 			await prisma.user.deleteMany({});
 			console.log('Deleted existing users');
 		} else {
-			console.log('No existing users to delete');
+			console.log('No existing users or reservations to delete');
 		}
 
 		// Check if we have roles, create them if not

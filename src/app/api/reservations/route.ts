@@ -71,13 +71,21 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
-		// Check if activity is associated with facility
-		const facilityActivity = await prisma.facilityActivity.findUnique({
+		// Find all facilities with the same name (due to potential duplicates)
+		const allFacilitiesWithSameName = await prisma.facility.findMany({
+			where: { name: facility.name }
+		});
+
+		const facilityIds = allFacilitiesWithSameName.map((f) => f.id);
+		console.log(
+			`Found ${facilityIds.length} facilities with name "${facility.name}"`
+		);
+
+		// Check if activity is associated with any facility with the same name
+		const facilityActivity = await prisma.facilityActivity.findFirst({
 			where: {
-				facilityId_activityId: {
-					facilityId: facilityId,
-					activityId: activityId
-				}
+				facilityId: { in: facilityIds },
+				activityId: activityId
 			}
 		});
 
