@@ -40,70 +40,38 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 				isActive: pathname === '/app'
 			},
 			{
-				title: 'Facilities',
+				title: 'Sportoviště',
 				url: '/app/facilities',
 				icon: Dumbbell,
 				isActive: pathname.startsWith('/app/facilities'),
 				items: [
 					{
-						title: 'All Facilities',
+						title: 'Všechna sportoviště',
 						url: '/app/facilities'
 					},
 					{
-						title: 'Availability',
+						title: 'Dostupnost',
 						url: '/app/facilities/availability'
 					}
 				]
 			},
 			{
-				title: 'Activities',
-				url: '/app/activities',
-				icon: Calendar,
-				isActive: pathname.startsWith('/app/activities'),
-				items: [
-					{
-						title: 'Browse Activities',
-						url: '/app/activities'
-					},
-					{
-						title: 'Schedule',
-						url: '/app/activities/schedule'
-					}
-				]
-			},
-			{
-				title: 'Reservations',
+				title: 'Rezervace',
 				url: '/app/reservations',
 				icon: BookCheck,
 				isActive: pathname.startsWith('/app/reservations'),
 				items: [
 					{
-						title: 'My Reservations',
+						title: 'Moje rezervace',
 						url: '/app/reservations'
 					},
 					{
-						title: 'Create Reservation',
-						url: '/app/reservations/create'
+						title: 'Vytvořit rezervaci',
+						url: '/app/facilities'
 					},
 					{
-						title: 'History',
+						title: 'Historie',
 						url: '/app/reservations/history'
-					}
-				]
-			},
-			{
-				title: 'Time Slots',
-				url: '/app/time-slots',
-				icon: Clock,
-				isActive: pathname.startsWith('/app/time-slots'),
-				items: [
-					{
-						title: 'Available Slots',
-						url: '/app/time-slots'
-					},
-					{
-						title: 'Schedule View',
-						url: '/app/time-slots/schedule'
 					}
 				]
 			}
@@ -112,24 +80,24 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 		// Items for authenticated users
 		if (isAuthenticated) {
 			commonItems.push({
-				title: 'Profile',
+				title: 'Profil',
 				url: '/app/profile',
 				icon: User,
 				isActive: pathname === '/app/profile'
 			});
 
 			commonItems.push({
-				title: 'Settings',
+				title: 'Nastavení',
 				url: '/app/settings',
 				icon: Settings,
 				isActive: pathname.startsWith('/app/settings'),
 				items: [
 					{
-						title: 'Account',
+						title: 'Účet',
 						url: '/app/settings/account'
 					},
 					{
-						title: 'Preferences',
+						title: 'Preference',
 						url: '/app/settings/preferences'
 					}
 				]
@@ -139,34 +107,34 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 		// Items for admin role
 		if (isAdmin) {
 			commonItems.push({
-				title: 'Users',
+				title: 'Uživatelé',
 				url: '/app/users',
 				icon: Users,
 				isActive: pathname.startsWith('/app/users'),
 				items: [
 					{
-						title: 'All Users',
+						title: 'Všichni uživatelé',
 						url: '/app/users'
 					},
 					{
-						title: 'Register User',
+						title: 'Registrovat uživatele',
 						url: '/app/users/register'
 					}
 				]
 			});
 
 			commonItems.push({
-				title: 'Reports',
+				title: 'Reporty',
 				url: '/app/reports',
 				icon: BarChart,
 				isActive: pathname.startsWith('/app/reports'),
 				items: [
 					{
-						title: 'Usage Statistics',
+						title: 'Statistiky využití',
 						url: '/app/reports/usage'
 					},
 					{
-						title: 'Financial Reports',
+						title: 'Finanční reporty',
 						url: '/app/reports/financial'
 					}
 				]
@@ -176,17 +144,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 		// Items for employee or admin role
 		if (isEmployee || isAdmin) {
 			commonItems.push({
-				title: 'Employee Portal',
+				title: 'Portál zaměstnance',
 				url: '/app/employee',
 				icon: UserCog,
 				isActive: pathname.startsWith('/app/employee'),
 				items: [
 					{
-						title: 'Shifts',
+						title: 'Směny',
 						url: '/app/employee/shifts'
 					},
 					{
-						title: 'Manage Reservations',
+						title: 'Správa rezervací',
 						url: '/app/employee/reservations'
 					}
 				]
@@ -201,7 +169,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 	return (
 		<Sidebar collapsible="icon" {...props}>
 			<SidebarHeader>
-				<h1>ActiveLife</h1>
+				<h1>ActiveLife Centrum</h1>
 			</SidebarHeader>
 			<SidebarContent>
 				<NavMain items={navItems} />
