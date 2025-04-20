@@ -28,7 +28,7 @@ declare module 'next-auth/jwt' {
 }
 
 // Role Types
-export type UserRole = 'admin' | 'employee' | 'user';
+export type UserRole = 'ADMIN' | 'EMPLOYEE' | 'USER';
 
 export interface RoleData {
 	id: string;

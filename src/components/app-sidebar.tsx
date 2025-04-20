@@ -27,7 +27,7 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-	const { isAdmin, isEmployee, isAuthenticated } = useAuth();
+	const { isAdmin, isEmployee } = useAuth();
 	const pathname = usePathname();
 
 	// Generate navigation data based on user role
@@ -76,33 +76,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 				]
 			}
 		];
-
-		// Items for authenticated users
-		if (isAuthenticated) {
-			commonItems.push({
-				title: 'Profil',
-				url: '/app/profile',
-				icon: User,
-				isActive: pathname === '/app/profile'
-			});
-
-			commonItems.push({
-				title: 'Nastavení',
-				url: '/app/settings',
-				icon: Settings,
-				isActive: pathname.startsWith('/app/settings'),
-				items: [
-					{
-						title: 'Účet',
-						url: '/app/settings/account'
-					},
-					{
-						title: 'Preference',
-						url: '/app/settings/preferences'
-					}
-				]
-			});
-		}
 
 		// Items for admin role
 		if (isAdmin) {

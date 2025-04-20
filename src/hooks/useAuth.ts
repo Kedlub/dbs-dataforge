@@ -31,8 +31,8 @@ export function useAuth() {
 		return user.role === requiredRole;
 	};
 
-	const isAdmin = hasRole('admin');
-	const isEmployee = hasRole(['admin', 'employee']);
+	const isAdmin = hasRole('ADMIN');
+	const isEmployee = hasRole(['ADMIN', 'EMPLOYEE']);
 	const isUser = isAuthenticated;
 
 	return {

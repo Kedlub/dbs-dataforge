@@ -135,9 +135,9 @@ export function NavUser() {
 						<DropdownMenuSeparator />
 						<DropdownMenuGroup>
 							<DropdownMenuItem asChild>
-								<Link href="/app/profile">
+								<Link href="/app/account">
 									<UserIcon className="mr-2 h-4 w-4" />
-									Můj profil
+									Můj účet
 								</Link>
 							</DropdownMenuItem>
 							<DropdownMenuItem asChild>
@@ -147,34 +147,6 @@ export function NavUser() {
 								</Link>
 							</DropdownMenuItem>
 						</DropdownMenuGroup>
-
-						{isAdmin && (
-							<>
-								<DropdownMenuSeparator />
-								<DropdownMenuGroup>
-									<DropdownMenuItem asChild>
-										<Link href="/app/admin">
-											<Shield className="mr-2 h-4 w-4" />
-											Admin Portál
-										</Link>
-									</DropdownMenuItem>
-								</DropdownMenuGroup>
-							</>
-						)}
-
-						{isEmployee && (
-							<>
-								<DropdownMenuSeparator />
-								<DropdownMenuGroup>
-									<DropdownMenuItem asChild>
-										<Link href="/app/employee">
-											<Users className="mr-2 h-4 w-4" />
-											Portál zaměstnance
-										</Link>
-									</DropdownMenuItem>
-								</DropdownMenuGroup>
-							</>
-						)}
 
 						<DropdownMenuSeparator />
 						<DropdownMenuItem

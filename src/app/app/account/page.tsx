@@ -153,7 +153,7 @@ export default function ProfilePage() {
 	return (
 		<div className="container mx-auto max-w-4xl">
 			<div className="mb-8 flex items-center justify-between">
-				<h1 className="text-3xl font-bold">Uživatelský profil</h1>
+				<h1 className="text-3xl font-bold">Uživatelský účet</h1>
 				<Button asChild variant="outline">
 					<Link href="/app">Zpět na Dashboard</Link>
 				</Button>
