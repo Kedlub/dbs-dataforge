@@ -56,9 +56,12 @@ export function FacilitiesList() {
 
 	// Helper function to format hours (24h format to 12h format with AM/PM)
 	const formatHour = (hour: number) => {
-		const period = hour >= 12 ? 'PM' : 'AM';
-		const displayHour = hour % 12 || 12;
-		return `${displayHour} ${period}`;
+		// const period = hour >= 12 ? 'PM' : 'AM';
+		// const displayHour = hour % 12 || 12;
+		// return `${displayHour} ${period}`;
+		// Format as HH:00 (e.g., 9 -> 09:00, 14 -> 14:00)
+		const displayHour = hour.toString().padStart(2, '0');
+		return `${displayHour}:00`;
 	};
 
 	// Render status badge with appropriate color and icon
@@ -139,12 +142,13 @@ export function FacilitiesList() {
 						<TableHead className="text-center">Otevírací doba</TableHead>
 						<TableHead className="text-center">Stav</TableHead>
 						<TableHead className="text-center">Akce</TableHead>
+						<TableHead className="text-center">Detail</TableHead>
 					</TableRow>
 				</TableHeader>
 				<TableBody>
 					{facilities.length === 0 ? (
 						<TableRow>
-							<TableCell colSpan={6} className="h-24 text-center">
+							<TableCell colSpan={7} className="h-24 text-center">
 								Nenalezena žádná sportoviště
 							</TableCell>
 						</TableRow>
@@ -176,6 +180,13 @@ export function FacilitiesList() {
 											Rezervovat
 										</Button>
 									)}
+								</TableCell>
+								<TableCell className="text-center">
+									<Button variant="secondary" size="sm" asChild>
+										<Link href={`/app/facilities/${facility.id}`}>
+											Zobrazit detail
+										</Link>
+									</Button>
 								</TableCell>
 							</TableRow>
 						))

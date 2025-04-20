@@ -61,9 +61,10 @@ export interface Facility {
 	name: string;
 	description: string | null;
 	capacity: number;
-	status: string;
+	status: 'ACTIVE' | 'MAINTENANCE' | 'CLOSED';
 	openingHour: number;
 	closingHour: number;
+	imageUrl: string | null;
 }
 
 // Activity types
