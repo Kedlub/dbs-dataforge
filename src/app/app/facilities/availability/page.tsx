@@ -6,6 +6,7 @@ import {
 	CardHeader,
 	CardTitle
 } from '@/components/ui/card';
+import { AvailabilityChecker } from '@/components/facilities/availability-checker';
 
 export const metadata: Metadata = {
 	title: 'Dostupnost sportovišť | ActiveLife',
@@ -22,21 +23,20 @@ export default function FacilityAvailabilityPage() {
 						Dostupnost sportovišť
 					</h1>
 					<p className="text-muted-foreground">
-						Zkontrolujte aktuální dostupnost našich sportovišť
+						Zkontrolujte aktuální dostupnost našich sportovišť pro vybraný den
 					</p>
 				</div>
 
 				<Card>
 					<CardHeader>
-						<CardTitle>Dostupnost v reálném čase</CardTitle>
+						<CardTitle>Kontrola dostupnosti</CardTitle>
 						<CardDescription>
-							Podívejte se, která sportoviště jsou momentálně k dispozici a
-							jejich nadcházející rozvrh
+							Vyberte datum a prohlédněte si souhrn dostupnosti pro aktivní
+							sportoviště
 						</CardDescription>
 					</CardHeader>
 					<CardContent>
-						{/* Availability calendar or schedule component will go here */}
-						<p>Připravujeme: Kontrola dostupnosti v reálném čase</p>
+						<AvailabilityChecker />
 					</CardContent>
 				</Card>
 			</div>
