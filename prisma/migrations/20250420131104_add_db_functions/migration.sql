@@ -4,7 +4,7 @@
 
 -- Function to calculate revenue for a facility within a date range
 CREATE OR REPLACE FUNCTION calculate_facility_revenue(
-    p_facility_id UUID,
+    p_facility_id TEXT,
     p_start_date DATE,
     p_end_date DATE
 )
@@ -27,7 +27,7 @@ $$ LANGUAGE plpgsql;
 
 -- Function to check the count of active (future) reservations for a user
 CREATE OR REPLACE FUNCTION check_user_active_reservations(
-    p_user_id UUID
+    p_user_id TEXT
 )
 RETURNS INTEGER AS $$
 DECLARE
@@ -47,7 +47,7 @@ $$ LANGUAGE plpgsql;
 
 -- Function to get a summary text of facility availability for a specific date
 CREATE OR REPLACE FUNCTION get_facility_availability_summary(
-    p_facility_id UUID,
+    p_facility_id TEXT,
     p_check_date DATE
 )
 RETURNS TEXT AS $$
@@ -58,7 +58,7 @@ DECLARE
     summary TEXT;
 BEGIN
     -- Get facility name (add explicit cast)
-    SELECT name INTO facility_name FROM facilities WHERE id::uuid = p_facility_id;
+    SELECT name INTO facility_name FROM facilities WHERE id = p_facility_id;
 
     IF NOT FOUND THEN
         RETURN 'Sportoviště nenalezeno.';
@@ -68,7 +68,7 @@ BEGIN
     SELECT COUNT(*)
     INTO total_slots
     FROM time_slots ts
-    WHERE ts.facility_id::uuid = p_facility_id
+    WHERE ts.facility_id = p_facility_id
       AND ts.start_time >= p_check_date::timestamp
       AND ts.start_time < (p_check_date + interval '1 day')::timestamp;
 
@@ -76,7 +76,7 @@ BEGIN
     SELECT COUNT(*)
     INTO available_slots
     FROM time_slots ts
-    WHERE ts.facility_id::uuid = p_facility_id
+    WHERE ts.facility_id = p_facility_id
       AND ts.start_time >= p_check_date::timestamp
       AND ts.start_time < (p_check_date + interval '1 day')::timestamp
       AND ts.is_available = TRUE;

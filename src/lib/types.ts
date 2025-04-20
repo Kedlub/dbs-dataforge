@@ -157,8 +157,8 @@ export const UserEditSchema = z.object({
 	lastName: z.string().min(1, 'Příjmení je povinné.').optional(),
 	email: z.string().email('Neplatný formát emailu.').optional(),
 	phone: z.string().optional(),
-	roleId: z.string().uuid('Neplatné ID role.'),
-	isActive: z.boolean()
+	roleId: z.string().uuid('Neplatné ID role.').optional(),
+	isActive: z.boolean().optional()
 });
 
 export type UserEditData = z.infer<typeof UserEditSchema>;

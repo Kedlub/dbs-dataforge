@@ -3,8 +3,6 @@ import bcrypt from 'bcrypt';
 import db from '@/lib/db';
 import { requireAuth } from '@/lib/auth';
 
-// TODO: Add authentication and authorization checks (admin only)
-
 export async function GET() {
 	try {
 		// Ensure only admins can access this route
