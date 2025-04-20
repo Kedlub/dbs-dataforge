@@ -12,3 +12,16 @@ alwaysApply: true
 - All Typescript types should be in src/lib/types.ts
 - Use sonner for toast notifications.
 - Make the UI in Czech.
+
+## Database Functions
+
+To fulfill specific project requirements, custom database functions are implemented directly in PostgreSQL. Prisma does not manage the definition of these functions, but they can be called from the application using `prisma.$queryRaw` or `prisma.$executeRaw`.
+
+The following functions have been created:
+
+1.  `calculate_facility_revenue(p_facility_id UUID, p_start_date DATE, p_end_date DATE) RETURNS DECIMAL`: Calculates the total revenue for a specific facility within a date range based on confirmed reservations.
+2.  `check_user_active_reservations(p_user_id UUID) RETURNS INTEGER`: Returns the count of active (confirmed or pending) future reservations for a given user.
+3.  `get_facility_availability_summary(p_facility_id UUID, p_check_date DATE) RETURNS TEXT`: Provides a textual summary of the available vs. total time slots for a specific facility on a given date.
+
+These functions are defined in the SQL migration file: [prisma/migrations/20250420131104_add_db_functions/migration.sql](mdc:prisma/migrations/20250420131104_add_db_functions/migration.sql).
+
