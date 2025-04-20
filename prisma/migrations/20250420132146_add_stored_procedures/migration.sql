@@ -2,7 +2,7 @@
 
 -- Stored procedure to cancel a reservation and update its status/reason.
 CREATE OR REPLACE PROCEDURE cancel_reservation(
-    p_reservation_id UUID,
+    p_reservation_id TEXT,
     p_cancellation_reason TEXT
 )
 LANGUAGE plpgsql
@@ -21,14 +21,14 @@ $$;
 
 -- Stored procedure to deactivate a user.
 CREATE OR REPLACE PROCEDURE deactivate_user(
-    p_user_id UUID
+    p_user_id TEXT
 )
 LANGUAGE plpgsql
 AS $$
 BEGIN
     UPDATE users
     SET is_active = false
-    WHERE user_id = p_user_id;
+    WHERE id = p_user_id;
 
     -- Potential Enhancement: Cancel future active reservations for the deactivated user.
     -- CALL cancel_reservation(res.reservation_id, 'User deactivated')
@@ -39,7 +39,7 @@ $$;
 
 -- Stored procedure to assign a new shift to an employee.
 CREATE OR REPLACE PROCEDURE assign_employee_shift(
-    p_employee_id UUID,
+    p_employee_id TEXT,
     p_start_time TIMESTAMP WITH TIME ZONE,
     p_end_time TIMESTAMP WITH TIME ZONE,
     p_shift_type TEXT
@@ -48,6 +48,6 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
     INSERT INTO employee_shifts (shift_id, employee_id, start_time, end_time, shift_type)
-    VALUES (gen_random_uuid(), p_employee_id, p_start_time, p_end_time, p_shift_type);
+    VALUES (gen_random_uuid()::text, p_employee_id, p_start_time, p_end_time, p_shift_type);
 END;
 $$;

@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
 			activeFacilities.map(async (facility: ActiveFacility) => {
 				try {
 					// Use $queryRawUnsafe for diagnostics, ensuring proper quoting and casting
-					const sql = `SELECT get_facility_availability_summary('${facility.id}'::uuid, '${checkDate}'::date) AS get_facility_availability_summary`;
+					const sql = `SELECT get_facility_availability_summary('${facility.id}'::TEXT, '${checkDate}'::date) AS get_facility_availability_summary`;
 					const result =
 						await prisma.$queryRawUnsafe<AvailabilitySummaryResult[]>(sql);
 
