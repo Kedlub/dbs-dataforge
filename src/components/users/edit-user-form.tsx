@@ -31,7 +31,7 @@ import {
 	SelectTrigger,
 	SelectValue
 } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch'; // Use Switch for boolean isActive
+import { Switch } from '@/components/ui/switch';
 import { UserEditSchema, UserEditData, Role, UserWithRole } from '@/lib/types';
 
 interface EditUserFormProps {
@@ -117,25 +117,6 @@ export function EditUserForm({
 			setIsSubmitting(false);
 		}
 	}
-
-	// Need shadcn Switch component
-	const ensureSwitchComponentExists = async () => {
-		// Simple check if file exists, ideally use fs but not available here
-		// Assuming if it fails, it might not exist
-		try {
-			await fetch('/components/ui/switch.tsx');
-		} catch {
-			// If fetch fails (or better check needed), run add command
-			// NOTE: This is a placeholder, direct terminal command from here is not ideal
-			console.warn(
-				'Switch component might be missing. Run: pnpm dlx shadcn-ui@latest add switch'
-			);
-		}
-	};
-
-	React.useEffect(() => {
-		ensureSwitchComponentExists();
-	}, []);
 
 	if (!user) return null; // Don't render dialog if no user selected
 
