@@ -1,5 +1,7 @@
 import 'next-auth';
 import { User } from 'next-auth';
+import { Prisma } from '../../generated/prisma';
+import { z } from 'zod';
 
 declare module 'next-auth' {
 	interface User {
@@ -113,3 +115,50 @@ export interface Report {
 	reportType: string;
 	reportData: any;
 }
+
+// Example type - replace or remove if not needed
+export interface ExampleData {
+	id: number;
+	name: string;
+	value: number;
+}
+
+// User Management Types
+
+// Combine Prisma User and Role types for API responses/frontend use
+// Exclude passwordHash from the default User type
+type UserBase = Omit<
+	Prisma.UserGetPayload<{ include: { role: true } }>,
+	'passwordHash'
+>;
+export interface UserWithRole extends UserBase {}
+
+// Type for Role, derived from Prisma
+export type Role = Prisma.RoleGetPayload<{}>;
+
+// Zod schema for creating a new user
+export const UserCreateSchema = z.object({
+	username: z.string().min(3, 'Uživatelské jméno musí mít alespoň 3 znaky.'),
+	password: z.string().min(6, 'Heslo musí mít alespoň 6 znaků.'),
+	firstName: z.string().min(1, 'Křestní jméno je povinné.'),
+	lastName: z.string().min(1, 'Příjmení je povinné.'),
+	email: z.string().email('Neplatný formát emailu.'),
+	phone: z.string().optional(), // Optional phone number
+	roleId: z.string().uuid('Neplatné ID role.'),
+	isActive: z.boolean().default(true)
+});
+
+export type UserCreateData = z.infer<typeof UserCreateSchema>;
+
+// Zod schema for editing an existing user
+// We might not allow changing username or password here, or handle password change separately
+export const UserEditSchema = z.object({
+	firstName: z.string().min(1, 'Křestní jméno je povinné.').optional(),
+	lastName: z.string().min(1, 'Příjmení je povinné.').optional(),
+	email: z.string().email('Neplatný formát emailu.').optional(),
+	phone: z.string().optional(),
+	roleId: z.string().uuid('Neplatné ID role.'),
+	isActive: z.boolean()
+});
+
+export type UserEditData = z.infer<typeof UserEditSchema>;
