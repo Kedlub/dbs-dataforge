@@ -115,14 +115,11 @@ export async function PATCH(
 			delete dataToUpdate.imageUrl;
 		}
 
-		console.log(id);
-		console.log(dataToUpdate);
+
 
 		const updatedFacilitySelect = await prisma.facility.findMany({
 			where: { id }
 		});
-		console.log(updatedFacilitySelect);
-
 		// Wrap update in transaction to set user context for the trigger
 		const updatedFacility = await prisma.$transaction(async (tx) => {
 			// Set the session variable for the current transaction
