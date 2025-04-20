@@ -87,6 +87,7 @@ export interface TimeSlot {
 	startTime: string | Date;
 	endTime: string | Date;
 	isAvailable: boolean;
+	facility?: Facility;
 }
 
 // Reservation types
@@ -101,10 +102,24 @@ export interface Reservation {
 	totalPrice: number | string;
 	lastModified: string | Date;
 	// Relations (when included in queries)
-	user?: User;
+	user?: UserData;
 	timeSlot?: TimeSlot;
 	activity?: Activity;
 }
+
+// Employee Shift types
+export interface EmployeeShift {
+	id: string;
+	employeeId: string;
+	startTime: string | Date;
+	endTime: string | Date;
+	shiftType: string;
+	// Relations (optional)
+	employee?: Employee;
+}
+
+// Type for Employee, derived from Prisma
+export type Employee = Prisma.EmployeeGetPayload<{ include: { user: true } }>;
 
 // Report types
 export interface Report {
