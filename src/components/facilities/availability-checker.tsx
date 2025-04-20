@@ -1,19 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import dayjs from 'dayjs';
-import 'dayjs/locale/cs'; // Import Czech locale for date formatting
-dayjs.locale('cs'); // Use Czech locale globally in this component
+import { format } from 'date-fns'; // Import format from date-fns
 
-import { Calendar as CalendarIcon, AlertCircle } from 'lucide-react';
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
-import {
-	Popover,
-	PopoverContent,
-	PopoverTrigger
-} from '@/components/ui/popover';
+import { AlertCircle } from 'lucide-react';
 import {
 	Table,
 	TableBody,
@@ -23,6 +13,7 @@ import {
 	TableRow
 } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
+import { DatePickerSingle } from '@/components/ui/date-picker-single'; // Import the new component
 
 interface FacilityAvailability {
 	facilityId: string;
@@ -47,7 +38,7 @@ export function AvailabilityChecker() {
 			setLoading(true);
 			setError(null);
 			try {
-				const dateString = dayjs(selectedDate).format('YYYY-MM-DD');
+				const dateString = format(selectedDate, 'yyyy-MM-dd');
 				const response = await fetch(
 					`/api/facilities/availability?date=${dateString}`
 				);
@@ -82,34 +73,7 @@ export function AvailabilityChecker() {
 				>
 					Vyberte datum
 				</label>
-				<Popover>
-					<PopoverTrigger asChild>
-						<Button
-							variant={'outline'}
-							className={cn(
-								'w-[280px] justify-start text-left font-normal',
-								!selectedDate && 'text-muted-foreground'
-							)}
-							id="availability-date"
-						>
-							<CalendarIcon className="mr-2 h-4 w-4" />
-							{selectedDate ? (
-								dayjs(selectedDate).format('LL')
-							) : (
-								<span>Vyberte datum</span>
-							)}
-						</Button>
-					</PopoverTrigger>
-					<PopoverContent className="w-auto p-0">
-						<Calendar
-							mode="single"
-							selected={selectedDate}
-							onSelect={setSelectedDate}
-							initialFocus
-							locale={require('date-fns/locale/cs')} // Use czech locale for calendar
-						/>
-					</PopoverContent>
-				</Popover>
+				<DatePickerSingle date={selectedDate} setDate={setSelectedDate} />
 			</div>
 
 			{error && (
