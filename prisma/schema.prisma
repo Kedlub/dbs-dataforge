@@ -68,6 +68,7 @@ model Facility {
   status      String // e.g., "active", "maintenance", "closed"
   openingHour Int                @map("opening_hour") // Hour of day (0-23)
   closingHour Int                @map("closing_hour") // Hour of day (0-23)
+  imageUrl    String?            @map("image_url") // Optional URL for facility image
   timeSlots   TimeSlot[]
   activities  FacilityActivity[]
 
