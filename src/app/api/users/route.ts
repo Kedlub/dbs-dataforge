@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server';
 import bcrypt from 'bcrypt';
 import db from '@/lib/db';
+import { requireAuth } from '@/lib/auth';
 
 // TODO: Add authentication and authorization checks (admin only)
 
 export async function GET() {
 	try {
+		// Ensure only admins can access this route
+		await requireAuth('ADMIN');
+
 		const users = await db.user.findMany({
 			include: {
 				role: true // Include role information
@@ -27,6 +31,9 @@ export async function GET() {
 
 export async function POST(req: Request) {
 	try {
+		// Ensure only admins can access this route
+		await requireAuth('ADMIN');
+
 		const body = await req.json();
 		const {
 			username,

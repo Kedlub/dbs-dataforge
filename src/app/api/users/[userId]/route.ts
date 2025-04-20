@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
+import { requireAuth } from '@/lib/auth';
 
 // TODO: Add authentication and authorization checks (admin only)
 
@@ -9,6 +10,9 @@ interface Params {
 
 export async function PATCH(req: Request, { params }: Params) {
 	try {
+		// Ensure only admins can access this route
+		await requireAuth('ADMIN');
+
 		const { userId } = params;
 		const body = await req.json();
 		const {
@@ -62,6 +66,9 @@ export async function PATCH(req: Request, { params }: Params) {
 
 export async function DELETE(req: Request, { params }: Params) {
 	try {
+		// Ensure only admins can access this route
+		await requireAuth('ADMIN');
+
 		const { userId } = params;
 
 		if (!userId) {

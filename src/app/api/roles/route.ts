@@ -1,9 +1,11 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
+import { requireAuth } from '@/lib/auth';
 
 export async function GET() {
 	try {
-		// TODO: Add authentication check to ensure only admins can access
+		// Ensure only admins can access this route
+		await requireAuth('ADMIN');
 
 		const roles = await db.role.findMany({
 			orderBy: {

@@ -11,7 +11,8 @@ import {
 	getFilteredRowModel,
 	getPaginationRowModel,
 	getSortedRowModel,
-	useReactTable
+	useReactTable,
+	Column
 } from '@tanstack/react-table';
 import { PlusCircle, Filter, X } from 'lucide-react';
 
@@ -82,6 +83,16 @@ export function UserDataTable<TData extends UserWithRole, TValue>({
 		}
 	});
 
+	// Map column IDs to their display names
+	const columnDisplayNames: Record<string, string> = {
+		firstName: 'Jméno',
+		email: 'Email',
+		username: 'Uživatelské jméno',
+		role_name: 'Role', // Use the accessorKey for nested properties
+		isActive: 'Status',
+		registrationDate: 'Datum registrace'
+	};
+
 	return (
 		<div>
 			{/* Toolbar: Filter, Add User, Column Visibility */}
@@ -117,9 +128,7 @@ export function UserDataTable<TData extends UserWithRole, TValue>({
 												column.toggleVisibility(!!value)
 											}
 										>
-											{/* Use header as label, might need better display names */}{' '}
-											HACK:
-											{column.id === 'firstName' ? 'Jméno' : column.id}
+											{columnDisplayNames[column.id] ?? column.id}
 										</DropdownMenuCheckboxItem>
 									);
 								})}
