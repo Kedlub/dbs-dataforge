@@ -5,6 +5,17 @@ import { Reservation } from '@/lib/types'; // Assuming Reservation includes rela
 import { format } from 'date-fns';
 import { cs } from 'date-fns/locale';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
+import { MoreHorizontal } from 'lucide-react'; // Icon for the trigger button
+import { DataTableRowActions } from './row-actions'; // Import the new component
 // import { DataTableColumnHeader } from '@/components/ui/data-table-column-header'; // If you have this component
 // import { DataTableRowActions } from './data-table-row-actions'; // Component for row actions (view, cancel, etc.)
 
@@ -71,6 +82,12 @@ export const columns: ColumnDef<Reservation>[] = [
 			return <div className="text-right font-medium">{formatted}</div>;
 		},
 		enableSorting: true
+	},
+	{
+		id: 'actions',
+		cell: ({ row }) => <DataTableRowActions row={row} />,
+		enableSorting: false,
+		enableHiding: false
 	}
 	// {
 	//     id: 'actions',

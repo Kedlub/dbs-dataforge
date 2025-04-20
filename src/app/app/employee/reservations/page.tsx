@@ -36,7 +36,16 @@ async function getReservations(): Promise<Reservation[]> {
 	// Ensure the data matches the Reservation type, potentially excluding passwordHash
 	// The Prisma type might be slightly different from our defined Reservation interface
 	// We might need explicit mapping if strict type safety is needed
-	return reservations as unknown as Reservation[];
+	// return reservations as unknown as Reservation[];
+	// Convert Decimal fields to strings before passing to client component
+	return reservations.map((reservation) => ({
+		...reservation,
+		totalPrice: reservation.totalPrice.toString(),
+		activity: {
+			...reservation.activity,
+			price: reservation.activity.price.toString()
+		}
+	})) as unknown as Reservation[];
 }
 
 export default async function EmployeeReservationsPage() {
