@@ -5,8 +5,8 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
-  output   = "../generated/prisma"
+  provider        = "prisma-client-js"
+  output          = "../generated/prisma"
   previewFeatures = ["views"]
 }
 
@@ -66,7 +66,7 @@ model Facility {
   name        String
   description String?
   capacity    Int
-  status      String // e.g., "active", "maintenance", "closed"
+  status      String // e.g., "ACTIVE", "MAINTENANCE", "CLOSED"
   openingHour Int                @map("opening_hour") // Hour of day (0-23)
   closingHour Int                @map("closing_hour") // Hour of day (0-23)
   imageUrl    String?            @map("image_url") // Optional URL for facility image
@@ -95,8 +95,8 @@ model Activity {
 model FacilityActivity {
   facilityId String   @map("facility_id")
   activityId String   @map("activity_id")
-  facility   Facility @relation(fields: [facilityId], references: [id])
-  activity   Activity @relation(fields: [activityId], references: [id])
+  facility   Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  activity   Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
 
   @@id([facilityId, activityId])
   @@map("facility_activities")
@@ -106,7 +106,7 @@ model FacilityActivity {
 model TimeSlot {
   id           String        @id @default(uuid())
   facilityId   String        @map("facility_id")
-  facility     Facility      @relation(fields: [facilityId], references: [id])
+  facility     Facility      @relation(fields: [facilityId], references: [id], onDelete: Cascade)
   startTime    DateTime      @map("start_time")
   endTime      DateTime      @map("end_time")
   isAvailable  Boolean       @default(true) @map("is_available")
@@ -122,9 +122,9 @@ model Reservation {
   userId             String   @map("user_id")
   user               User     @relation(fields: [userId], references: [id])
   slotId             String   @map("slot_id")
-  timeSlot           TimeSlot @relation(fields: [slotId], references: [id])
+  timeSlot           TimeSlot @relation(fields: [slotId], references: [id], onDelete: Cascade)
   activityId         String   @map("activity_id")
-  activity           Activity @relation(fields: [activityId], references: [id])
+  activity           Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
   createdAt          DateTime @default(now()) @map("created_at")
   status             String // e.g., "confirmed", "cancelled", "pending"
   cancellationReason String?  @map("cancellation_reason")
@@ -165,14 +165,14 @@ model Report {
 
 // Audit log for tracking changes
 model AuditLog {
-  id          String    @id @default(uuid())
-  tableName   String    @map("table_name")      // e.g., "facilities", "users"
-  recordId    String    @map("record_id")       // ID of the record that changed
-  columnName  String?   @map("column_name")    // Name of the column that changed (optional)
-  oldValue    String?   @map("old_value")       // Previous value
-  newValue    String?   @map("new_value")       // New value
-  changedAt   DateTime  @default(now()) @map("changed_at")
-  changedBy   String?   @map("changed_by")    // User ID who made the change (if available)
+  id         String   @id @default(dbgenerated("gen_random_uuid()"))
+  tableName  String   @map("table_name") // e.g., "facilities", "users"
+  recordId   String   @map("record_id") // ID of the record that changed
+  columnName String?  @map("column_name") // Name of the column that changed (optional)
+  oldValue   String?  @map("old_value") // Previous value
+  newValue   String?  @map("new_value") // New value
+  changedAt  DateTime @default(now()) @map("changed_at")
+  changedBy  String?  @map("changed_by") // User ID who made the change (if available)
 
   @@index([tableName, recordId])
   @@map("audit_logs")
@@ -182,32 +182,32 @@ model AuditLog {
 
 // View for detailed user reservations
 view UserReservationView {
-  reservation_id           String    @unique @db.Uuid
-  user_id                  String    @db.Uuid
-  username                 String
-  first_name               String
-  last_name                String
-  activity_name            String
-  facility_name            String
-  start_time               DateTime
-  end_time                 DateTime
-  reservation_status       String
-  total_price              Decimal
-  reservation_created_at   DateTime
+  reservation_id         String   @unique @db.Uuid
+  user_id                String   @db.Uuid
+  username               String
+  first_name             String
+  last_name              String
+  activity_name          String
+  facility_name          String
+  start_time             DateTime
+  end_time               DateTime
+  reservation_status     String
+  total_price            Decimal
+  reservation_created_at DateTime
 
   @@map("vw_user_reservations")
 }
 
 // View for facility schedule
 view FacilityScheduleView {
-  facility_id     String    @db.Uuid
-  facility_name   String
-  time_slot_id    String    @unique @db.Uuid
-  start_time      DateTime
-  end_time        DateTime
-  is_available    Boolean
-  reservation_id  String?   @db.Uuid
-  activity_name   String?
+  facility_id    String   @db.Uuid
+  facility_name  String
+  time_slot_id   String   @unique @db.Uuid
+  start_time     DateTime
+  end_time       DateTime
+  is_available   Boolean
+  reservation_id String?  @db.Uuid
+  activity_name  String?
 
   @@map("vw_facility_schedule")
 }

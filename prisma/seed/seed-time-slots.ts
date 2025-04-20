@@ -53,7 +53,7 @@ async function seedTimeSlots() {
 						facilityId: facility.id,
 						startTime,
 						endTime,
-						isAvailable: facility.status === 'active'
+						isAvailable: facility.status === 'ACTIVE'
 					};
 
 					allTimeSlots.push(timeSlot);
