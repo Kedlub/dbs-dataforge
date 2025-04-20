@@ -68,10 +68,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 					{
 						title: 'Vytvořit rezervaci',
 						url: '/app/facilities'
-					},
-					{
-						title: 'Historie',
-						url: '/app/reservations/history'
 					}
 				]
 			}
@@ -83,17 +79,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 				title: 'Uživatelé',
 				url: '/app/users',
 				icon: Users,
-				isActive: pathname.startsWith('/app/users'),
-				items: [
-					{
-						title: 'Všichni uživatelé',
-						url: '/app/users'
-					},
-					{
-						title: 'Registrovat uživatele',
-						url: '/app/users/register'
-					}
-				]
+				isActive: pathname.startsWith('/app/users')
 			});
 
 			commonItems.push({
