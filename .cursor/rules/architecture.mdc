@@ -37,3 +37,15 @@ The following procedures have been created:
 
 These procedures are defined in the SQL migration file: [prisma/migrations/20250420132146_add_stored_procedures/migration.sql](mdc:prisma/migrations/20250420132146_add_stored_procedures/migration.sql).
 
+## Database Triggers
+
+Triggers are used to automatically execute actions in response to specific database events (INSERT, UPDATE, DELETE).
+
+The following triggers have been created:
+
+1.  `trg_facility_status_change`: Executes after an `UPDATE` on the `facilities` table. If the `status` column is changed, it calls the `log_facility_status_change()` function to record the change in the `audit_logs` table (defined as the `AuditLog` model in [prisma/schema.prisma](mdc:prisma/schema.prisma)).
+2.  `trg_user_deactivation`: Executes after an `UPDATE` on the `users` table. If the `is_active` column is changed from `true` to `false`, it calls the `cancel_user_future_reservations()` function to cancel all future pending/confirmed reservations for that user.
+
+This trigger (`trg_facility_status_change`) and its associated function are defined in the SQL migration file: [prisma/migrations/20250420132723_add_audit_log_and_trigger/migration.sql](mdc:prisma/migrations/20250420132723_add_audit_log_and_trigger/migration.sql).
+The `trg_user_deactivation` trigger and its function are defined in: [prisma/migrations/20250420132921_add_user_deactivation_trigger/migration.sql](mdc:prisma/migrations/20250420132921_add_user_deactivation_trigger/migration.sql).
+

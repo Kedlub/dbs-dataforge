@@ -157,6 +157,21 @@ model Report {
   @@map("reports")
 }
 
+// Audit log for tracking changes
+model AuditLog {
+  id          String    @id @default(uuid())
+  tableName   String    @map("table_name")      // e.g., "facilities", "users"
+  recordId    String    @map("record_id")       // ID of the record that changed
+  columnName  String?   @map("column_name")    // Name of the column that changed (optional)
+  oldValue    String?   @map("old_value")       // Previous value
+  newValue    String?   @map("new_value")       // New value
+  changedAt   DateTime  @default(now()) @map("changed_at")
+  changedBy   String?   @map("changed_by")    // User ID who made the change (if available)
+
+  @@index([tableName, recordId])
+  @@map("audit_logs")
+}
+
 // --- Database Views ---
 
 // View for detailed user reservations
