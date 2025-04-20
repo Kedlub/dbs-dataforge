@@ -57,32 +57,32 @@ DECLARE
     available_slots INTEGER;
     summary TEXT;
 BEGIN
-    -- Get facility name
-    SELECT name INTO facility_name FROM facilities WHERE id = p_facility_id;
+    -- Get facility name (add explicit cast)
+    SELECT name INTO facility_name FROM facilities WHERE id::uuid = p_facility_id;
 
     IF NOT FOUND THEN
         RETURN 'Sportoviště nenalezeno.';
     END IF;
 
-    -- Count total slots starting on the given date
+    -- Count total slots starting on the given date (add explicit cast)
     SELECT COUNT(*)
     INTO total_slots
     FROM time_slots ts
-    WHERE ts.facility_id = p_facility_id
+    WHERE ts.facility_id::uuid = p_facility_id
       AND ts.start_time >= p_check_date::timestamp
       AND ts.start_time < (p_check_date + interval '1 day')::timestamp;
 
-    -- Count available slots starting on the given date
+    -- Count available slots starting on the given date (add explicit cast)
     SELECT COUNT(*)
     INTO available_slots
     FROM time_slots ts
-    WHERE ts.facility_id = p_facility_id
+    WHERE ts.facility_id::uuid = p_facility_id
       AND ts.start_time >= p_check_date::timestamp
       AND ts.start_time < (p_check_date + interval '1 day')::timestamp
       AND ts.is_available = TRUE;
 
-    -- Format the summary string in Czech
-    summary := facility_name || ': ' || available_slots::TEXT || '/' || total_slots::TEXT || ' slotů volných dne ' || to_char(p_check_date, 'DD.MM.YYYY');
+    -- Format the summary string in Czech (without facility name)
+    summary := available_slots::TEXT || '/' || total_slots::TEXT || ' slotů volných dne ' || to_char(p_check_date, 'DD.MM.YYYY');
 
     RETURN summary;
 END;

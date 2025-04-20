@@ -5,9 +5,11 @@ alwaysApply: true
 ---
 # Project Technologies
 - The project uses shadcn/ui components (and thus Tailwind css), use shadcn/ui style guides.
+    - If you need to import any new component from shadcn/ui, use their cli tool (pnpm dlx shadcn@latest add button)
 - The project uses Prisma as ORM, and PostgreSQL as the underlying DB.
 - The project uses Next.js App Router in src/ folder.
 - The project uses Typescript.
+- Create API routes instead of server actions, create them in /src/app/api
 - Project uses PNPM as a package manager.
 - All Typescript types should be in src/lib/types.ts
 - Use sonner for toast notifications.
