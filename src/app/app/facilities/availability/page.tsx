@@ -18,15 +18,6 @@ export default function FacilityAvailabilityPage() {
 	return (
 		<div className="container px-4 py-6 md:px-6 md:py-8 lg:py-10">
 			<div className="flex flex-col gap-6">
-				<div>
-					<h1 className="scroll-m-20 text-3xl font-semibold tracking-tight">
-						Dostupnost sportovišť
-					</h1>
-					<p className="text-muted-foreground">
-						Zkontrolujte aktuální dostupnost našich sportovišť pro vybraný den
-					</p>
-				</div>
-
 				<Card>
 					<CardHeader>
 						<CardTitle>Kontrola dostupnosti</CardTitle>
