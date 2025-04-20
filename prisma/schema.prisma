@@ -7,6 +7,7 @@
 generator client {
   provider = "prisma-client-js"
   output   = "../generated/prisma"
+  previewFeatures = ["views"]
 }
 
 datasource db {
@@ -154,4 +155,52 @@ model Report {
   reportData  Json     @map("report_data")
 
   @@map("reports")
+}
+
+// --- Database Views ---
+
+// View for detailed user reservations
+view UserReservationView {
+  reservation_id           String    @unique @db.Uuid
+  user_id                  String    @db.Uuid
+  username                 String
+  first_name               String
+  last_name                String
+  activity_name            String
+  facility_name            String
+  start_time               DateTime
+  end_time                 DateTime
+  reservation_status       String
+  total_price              Decimal
+  reservation_created_at   DateTime
+
+  @@map("vw_user_reservations")
+}
+
+// View for facility schedule
+view FacilityScheduleView {
+  facility_id     String    @db.Uuid
+  facility_name   String
+  time_slot_id    String    @unique @db.Uuid
+  start_time      DateTime
+  end_time        DateTime
+  is_available    Boolean
+  reservation_id  String?   @db.Uuid
+  activity_name   String?
+
+  @@map("vw_facility_schedule")
+}
+
+// View for employee schedule
+view EmployeeScheduleView {
+  shift_id    String   @unique @db.Uuid
+  employee_id String   @db.Uuid
+  first_name  String
+  last_name   String
+  position    String
+  start_time  DateTime
+  end_time    DateTime
+  shift_type  String
+
+  @@map("vw_employee_schedule")
 }
