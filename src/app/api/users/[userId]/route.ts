@@ -32,10 +32,10 @@ export async function PATCH(req: Request, { params }: Params) {
 			);
 		}
 
-		// Prepare data for Prisma, mapping empty/undefined phone to null
+		// Prepare data for Prisma, conditionally including the phone field
 		const dataToUpdate = {
 			...validationResult.data,
-			phone: validationResult.data.phone || null
+			...(validationResult.data.phone !== undefined && { phone: validationResult.data.phone })
 		};
 
 		// Check if there's actually any data to update after validation
