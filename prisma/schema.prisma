@@ -43,6 +43,7 @@ model User {
   reservations     Reservation[]
   reports          Report[]
 
+  @@index([email])
   @@map("users")
 }
 
@@ -111,6 +112,7 @@ model TimeSlot {
   isAvailable  Boolean       @default(true) @map("is_available")
   reservations Reservation[]
 
+  @@index([facilityId])
   @@map("time_slots")
 }
 
@@ -129,6 +131,8 @@ model Reservation {
   totalPrice         Decimal  @map("total_price")
   lastModified       DateTime @updatedAt @map("last_modified")
 
+  @@index([userId])
+  @@index([slotId])
   @@map("reservations")
 }
 
@@ -141,6 +145,7 @@ model EmployeeShift {
   endTime    DateTime @map("end_time")
   shiftType  String   @map("shift_type") // e.g., "morning", "afternoon", "evening"
 
+  @@index([employeeId])
   @@map("employee_shifts")
 }
 
