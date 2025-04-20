@@ -145,7 +145,7 @@ export const UserCreateSchema = z.object({
 	email: z.string().email('Neplatný formát emailu.'),
 	phone: z.string().optional(), // Optional phone number
 	roleId: z.string().uuid('Neplatné ID role.'),
-	isActive: z.boolean().default(true)
+	isActive: z.boolean()
 });
 
 export type UserCreateData = z.infer<typeof UserCreateSchema>;
