@@ -25,3 +25,15 @@ The following functions have been created:
 
 These functions are defined in the SQL migration file: [prisma/migrations/20250420131104_add_db_functions/migration.sql](mdc:prisma/migrations/20250420131104_add_db_functions/migration.sql).
 
+## Database Stored Procedures
+
+Similar to functions, custom stored procedures are used for specific actions, especially those involving data modification or transaction control. They are defined directly in PostgreSQL and called via `prisma.$executeRaw` or `prisma.$executeRawUnsafe`.
+
+The following procedures have been created:
+
+1.  `cancel_reservation(p_reservation_id UUID, p_cancellation_reason TEXT)`: Updates a reservation's status to 'cancelled' and records the reason.
+2.  `deactivate_user(p_user_id UUID)`: Sets a user's `is_active` flag to false.
+3.  `assign_employee_shift(p_employee_id UUID, p_start_time TIMESTAMP WITH TIME ZONE, p_end_time TIMESTAMP WITH TIME ZONE, p_shift_type TEXT)`: Inserts a new work shift for an employee.
+
+These procedures are defined in the SQL migration file: [prisma/migrations/20250420132146_add_stored_procedures/migration.sql](mdc:prisma/migrations/20250420132146_add_stored_procedures/migration.sql).
+
