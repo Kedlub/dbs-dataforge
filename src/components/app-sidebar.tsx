@@ -109,6 +109,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
 			// Items for admin role only
 			commonItems.push({
+				title: 'Plánování směn',
+				url: '/app/shifts',
+				icon: Calendar,
+				isActive: pathname === '/app/shifts'
+			});
+			commonItems.push({
 				title: 'Nastavení',
 				url: '/app/settings',
 				icon: Settings,

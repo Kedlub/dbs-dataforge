@@ -47,7 +47,7 @@ CREATE OR REPLACE PROCEDURE assign_employee_shift(
 LANGUAGE plpgsql
 AS $$
 BEGIN
-    INSERT INTO employee_shifts (shift_id, employee_id, start_time, end_time, shift_type)
+    INSERT INTO employee_shifts (id, employee_id, start_time, end_time, shift_type)
     VALUES (gen_random_uuid()::text, p_employee_id, p_start_time, p_end_time, p_shift_type);
 END;
 $$;
