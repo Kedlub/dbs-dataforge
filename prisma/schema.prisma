@@ -130,9 +130,11 @@ model Reservation {
   cancellationReason String?  @map("cancellation_reason")
   totalPrice         Decimal  @map("total_price")
   lastModified       DateTime @updatedAt @map("last_modified")
+  internalNotes      String?  // Added internal notes field
 
   @@index([userId])
   @@index([slotId])
+  @@index([activityId]) // Assuming this index is desired
   @@map("reservations")
 }
 

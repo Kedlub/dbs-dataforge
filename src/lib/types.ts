@@ -99,6 +99,7 @@ export interface Reservation {
 	createdAt: string | Date;
 	status: string;
 	cancellationReason?: string | null;
+	internalNotes?: string | null;
 	totalPrice: number | string;
 	lastModified: string | Date;
 	// Relations (when included in queries)

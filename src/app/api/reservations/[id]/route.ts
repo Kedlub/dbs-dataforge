@@ -9,14 +9,17 @@ const ReservationStatus = z.enum(['pending', 'confirmed', 'cancelled']);
 const updateSchema = z
 	.object({
 		status: ReservationStatus.optional(),
-		cancellationReason: z.string().nullable().optional() // Allow null or string
+		cancellationReason: z.string().nullable().optional(), // Allow null or string
+		internalNotes: z.string().nullable().optional() // Add internalNotes
 	})
 	.refine(
 		(data) =>
-			data.status !== undefined || data.cancellationReason !== undefined,
+			data.status !== undefined ||
+			data.cancellationReason !== undefined ||
+			data.internalNotes !== undefined, // Add internalNotes to refine condition
 		{
 			message:
-				'At least one field (status or cancellationReason) must be provided for update'
+				'At least one field (status, cancellationReason, or internalNotes) must be provided for update'
 		}
 	);
 
@@ -47,8 +50,7 @@ export async function PATCH(
 		if (validation.data.status !== undefined) {
 			dataToUpdate.status = validation.data.status;
 		}
-		// We explicitly set cancellationReason to null if status is not 'cancelled'
-		// or if it's provided as null. Otherwise, we use the provided string.
+		// Handle cancellationReason based on status
 		if (
 			validation.data.status !== undefined &&
 			validation.data.status !== 'cancelled'
@@ -56,6 +58,11 @@ export async function PATCH(
 			dataToUpdate.cancellationReason = null;
 		} else if (validation.data.cancellationReason !== undefined) {
 			dataToUpdate.cancellationReason = validation.data.cancellationReason;
+		}
+
+		// Add internalNotes if provided
+		if (validation.data.internalNotes !== undefined) {
+			dataToUpdate.internalNotes = validation.data.internalNotes;
 		}
 
 		// Check if reservation exists before trying to update

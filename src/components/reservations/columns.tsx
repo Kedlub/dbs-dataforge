@@ -14,8 +14,14 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { MoreHorizontal } from 'lucide-react'; // Icon for the trigger button
+import { MoreHorizontal, FileText } from 'lucide-react'; // Icon for the trigger button and FileText for notes
 import { DataTableRowActions } from './row-actions'; // Import the new component
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger
+} from '@/components/ui/tooltip';
 // import { DataTableColumnHeader } from '@/components/ui/data-table-column-header'; // If you have this component
 // import { DataTableRowActions } from './data-table-row-actions'; // Component for row actions (view, cancel, etc.)
 
@@ -71,8 +77,33 @@ export const columns: ColumnDef<Reservation>[] = [
 		enableSorting: true
 	},
 	{
+		accessorKey: 'internalNotes',
+		header: 'Poznámky',
+		cell: ({ row }) => {
+			const notes = row.original.internalNotes;
+			return notes ? (
+				<TooltipProvider>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<span className="flex cursor-default items-center justify-center">
+								<FileText className="text-muted-foreground h-4 w-4" />
+							</span>
+						</TooltipTrigger>
+						<TooltipContent>
+							<p className="max-w-xs break-words whitespace-pre-wrap">
+								{notes}
+							</p>
+						</TooltipContent>
+					</Tooltip>
+				</TooltipProvider>
+			) : null;
+		},
+		enableSorting: false,
+		meta: { align: 'center' } // Optional: center the icon
+	},
+	{
 		accessorKey: 'totalPrice',
-		header: 'Cena',
+		header: () => <div className="text-right">Cena</div>, // Right-align header
 		cell: ({ row }) => {
 			const amount = parseFloat(String(row.getValue('totalPrice')));
 			const formatted = new Intl.NumberFormat('cs-CZ', {

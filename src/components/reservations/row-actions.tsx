@@ -43,6 +43,7 @@ import {
 } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
 interface DataTableRowActionsProps<TData> {
 	row: Row<TData>;
@@ -58,13 +59,18 @@ export function DataTableRowActions<TData extends Reservation>({
 	const reservation = row.original;
 	const router = useRouter();
 	const [showCancelDialog, setShowCancelDialog] = useState(false);
-	const [showEditDialog, setShowEditDialog] = useState(false);
+	const [showEditStatusDialog, setShowEditStatusDialog] = useState(false);
+	const [showEditNotesDialog, setShowEditNotesDialog] = useState(false);
 	const [cancellationReason, setCancellationReason] = useState('');
 	const [newStatus, setNewStatus] = useState<ResStatus>(
 		reservation.status as ResStatus
 	);
+	const [internalNotes, setInternalNotes] = useState(
+		reservation.internalNotes ?? ''
+	);
 	const [isCancelling, setIsCancelling] = useState(false);
-	const [isUpdating, setIsUpdating] = useState(false);
+	const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
+	const [isUpdatingNotes, setIsUpdatingNotes] = useState(false);
 
 	const handleCancel = async () => {
 		if (!cancellationReason) {
@@ -73,16 +79,16 @@ export function DataTableRowActions<TData extends Reservation>({
 		}
 		setIsCancelling(true);
 		try {
-			const response = await fetch(
-				`/api/reservations/${reservation.id}/cancel`,
-				{
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json'
-					},
-					body: JSON.stringify({ cancellationReason })
-				}
-			);
+			const response = await fetch(`/api/reservations/${reservation.id}`, {
+				method: 'PATCH',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					status: 'cancelled',
+					cancellationReason: cancellationReason
+				})
+			});
 
 			if (!response.ok) {
 				const errorData = await response.json();
@@ -101,12 +107,12 @@ export function DataTableRowActions<TData extends Reservation>({
 		}
 	};
 
-	const handleEdit = async () => {
+	const handleEditStatus = async () => {
 		if (newStatus === reservation.status) {
-			setShowEditDialog(false);
+			setShowEditStatusDialog(false);
 			return;
 		}
-		setIsUpdating(true);
+		setIsUpdatingStatus(true);
 		try {
 			const response = await fetch(`/api/reservations/${reservation.id}`, {
 				method: 'PATCH',
@@ -124,13 +130,48 @@ export function DataTableRowActions<TData extends Reservation>({
 			}
 
 			toast.success('Stav rezervace byl úspěšně aktualizován.');
-			setShowEditDialog(false);
+			setShowEditStatusDialog(false);
 			router.refresh();
 		} catch (error: any) {
 			console.error('Failed to update reservation status:', error);
 			toast.error(`Chyba: ${error.message}`);
 		} finally {
-			setIsUpdating(false);
+			setIsUpdatingStatus(false);
+		}
+	};
+
+	const handleEditNotes = async () => {
+		if (internalNotes === (reservation.internalNotes ?? '')) {
+			setShowEditNotesDialog(false);
+			return;
+		}
+		setIsUpdatingNotes(true);
+		try {
+			const response = await fetch(`/api/reservations/${reservation.id}`, {
+				method: 'PATCH',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					internalNotes: internalNotes ? internalNotes : null
+				})
+			});
+
+			if (!response.ok) {
+				const errorData = await response.json();
+				throw new Error(
+					errorData.error || 'Nepodařilo se aktualizovat poznámky'
+				);
+			}
+
+			toast.success('Poznámky byly úspěšně aktualizovány.');
+			setShowEditNotesDialog(false);
+			router.refresh();
+		} catch (error: any) {
+			console.error('Failed to update reservation notes:', error);
+			toast.error(`Chyba: ${error.message}`);
+		} finally {
+			setIsUpdatingNotes(false);
 		}
 	};
 
@@ -152,11 +193,20 @@ export function DataTableRowActions<TData extends Reservation>({
 						onSelect={(e) => e.preventDefault()}
 						onClick={() => {
 							setNewStatus(reservation.status as ResStatus);
-							setShowEditDialog(true);
+							setShowEditStatusDialog(true);
 						}}
 						disabled={reservation.status === 'cancelled'}
 					>
 						Upravit stav
+					</DropdownMenuItem>
+					<DropdownMenuItem
+						onSelect={(e) => e.preventDefault()}
+						onClick={() => {
+							setInternalNotes(reservation.internalNotes ?? '');
+							setShowEditNotesDialog(true);
+						}}
+					>
+						Upravit poznámky
 					</DropdownMenuItem>
 					<DropdownMenuSeparator />
 					<DropdownMenuItem
@@ -170,7 +220,10 @@ export function DataTableRowActions<TData extends Reservation>({
 				</DropdownMenuContent>
 			</DropdownMenu>
 
-			<Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+			<Dialog
+				open={showEditStatusDialog}
+				onOpenChange={setShowEditStatusDialog}
+			>
 				<DialogContent className="sm:max-w-[425px]">
 					<DialogHeader>
 						<DialogTitle>Upravit stav rezervace</DialogTitle>
@@ -186,7 +239,7 @@ export function DataTableRowActions<TData extends Reservation>({
 							<Select
 								value={newStatus}
 								onValueChange={(value) => setNewStatus(value as ResStatus)}
-								disabled={isUpdating}
+								disabled={isUpdatingStatus}
 							>
 								<SelectTrigger className="col-span-3">
 									<SelectValue placeholder="Vyberte stav" />
@@ -206,16 +259,59 @@ export function DataTableRowActions<TData extends Reservation>({
 					<DialogFooter>
 						<Button
 							variant="outline"
-							onClick={() => setShowEditDialog(false)}
-							disabled={isUpdating}
+							onClick={() => setShowEditStatusDialog(false)}
+							disabled={isUpdatingStatus}
 						>
 							Zrušit
 						</Button>
 						<Button
-							onClick={handleEdit}
-							disabled={isUpdating || newStatus === reservation.status}
+							onClick={handleEditStatus}
+							disabled={isUpdatingStatus || newStatus === reservation.status}
 						>
-							{isUpdating ? 'Ukládání...' : 'Uložit změny'}
+							{isUpdatingStatus ? 'Ukládání...' : 'Uložit změny'}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+
+			<Dialog open={showEditNotesDialog} onOpenChange={setShowEditNotesDialog}>
+				<DialogContent className="sm:max-w-[425px]">
+					<DialogHeader>
+						<DialogTitle>Upravit interní poznámky</DialogTitle>
+						<DialogDescription>
+							Přidejte nebo upravte interní poznámky k této rezervaci. Tyto
+							poznámky neuvidí běžní uživatelé.
+						</DialogDescription>
+					</DialogHeader>
+					<div className="grid gap-4 py-4">
+						<div className="grid w-full gap-1.5">
+							<Label htmlFor="internalNotes">Poznámky</Label>
+							<Textarea
+								id="internalNotes"
+								value={internalNotes}
+								onChange={(e) => setInternalNotes(e.target.value)}
+								placeholder="Zadejte interní poznámku..."
+								rows={4}
+								disabled={isUpdatingNotes}
+							/>
+						</div>
+					</div>
+					<DialogFooter>
+						<Button
+							variant="outline"
+							onClick={() => setShowEditNotesDialog(false)}
+							disabled={isUpdatingNotes}
+						>
+							Zrušit
+						</Button>
+						<Button
+							onClick={handleEditNotes}
+							disabled={
+								isUpdatingNotes ||
+								internalNotes === (reservation.internalNotes ?? '')
+							}
+						>
+							{isUpdatingNotes ? 'Ukládání...' : 'Uložit poznámky'}
 						</Button>
 					</DialogFooter>
 				</DialogContent>
@@ -229,6 +325,7 @@ export function DataTableRowActions<TData extends Reservation>({
 						</AlertDialogTitle>
 						<AlertDialogDescription>
 							Tato akce nemůže být vrácena zpět. Zadejte prosím důvod zrušení.
+							Rezervace bude označena jako 'zrušená'.
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<div className="grid gap-2 py-4">
@@ -248,7 +345,7 @@ export function DataTableRowActions<TData extends Reservation>({
 						<AlertDialogAction
 							className="bg-red-600 hover:bg-red-700"
 							onClick={handleCancel}
-							disabled={!cancellationReason || isCancelling}
+							disabled={isCancelling || !cancellationReason}
 						>
 							{isCancelling ? 'Rušení...' : 'Potvrdit zrušení'}
 						</AlertDialogAction>
