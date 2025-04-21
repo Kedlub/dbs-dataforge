@@ -13,8 +13,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { CalendarIcon, CheckCircle2, Loader2 } from 'lucide-react';
 import { Label } from '@/components/ui/label';
-import { Facility, Activity } from '@/lib/types';
-import { format } from 'date-fns';
+import { Facility, Activity, SystemSettings } from '@/lib/types';
+import { format, addDays, startOfDay } from 'date-fns';
 import { Calendar } from '@/components/ui/calendar';
 import {
 	Popover,
@@ -30,63 +30,102 @@ import {
 } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 
+// Define a type for the available slots state
+interface AvailableSlot {
+	id: string;
+	time: string; // Formatted time (HH:mm)
+}
+
+// Define TimeSlot locally if not exported, only needed for API response typing
+interface ApiTimeSlot {
+	id: string;
+	facilityId: string;
+	startTime: string | Date;
+	endTime: string | Date;
+	isAvailable: boolean;
+}
+
 export default function ReserveFacilityPage() {
 	const router = useRouter();
 	const { id } = useParams();
 	const [facility, setFacility] = useState<Facility | null>(null);
 	const [activities, setActivities] = useState<Activity[]>([]);
 	const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
-	const [selectedTime, setSelectedTime] = useState<string | undefined>(
+	const [selectedSlotId, setSelectedSlotId] = useState<string | undefined>(
 		undefined
 	);
 	const [selectedActivity, setSelectedActivity] = useState<string | undefined>(
 		undefined
 	);
-	const [availableTimeSlots, setAvailableTimeSlots] = useState<string[]>([]);
+	const [availableTimeSlots, setAvailableTimeSlots] = useState<AvailableSlot[]>(
+		[]
+	);
 	const [isLoading, setIsLoading] = useState(true);
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 	const [success, setSuccess] = useState(false);
+	const [settings, setSettings] = useState<Pick<
+		SystemSettings,
+		'maxBookingLeadDays'
+	> | null>(null);
+	const [isLoadingSettings, setIsLoadingSettings] = useState(true);
 
-	// Fetch facility details
+	// Fetch facility details and settings
 	useEffect(() => {
-		const fetchFacility = async () => {
-			try {
-				const response = await fetch(`/api/facilities/${id}`);
+		setIsLoading(true);
+		setIsLoadingSettings(true);
 
-				if (!response.ok) {
+		const fetchFacilityAndActivities = async () => {
+			try {
+				// Fetch facility and its activities
+				const [facilityResponse, activitiesResponse] = await Promise.all([
+					fetch(`/api/facilities/${id}`),
+					fetch(`/api/activities?facilityId=${id}`)
+				]);
+
+				if (!facilityResponse.ok) {
 					throw new Error('Failed to fetch facility');
 				}
-
-				const data = await response.json();
-				setFacility(data);
-			} catch (err) {
-				setError(
-					'Chyba při načítání detailů sportoviště. Zkuste to prosím později.'
-				);
-				console.error('Error fetching facility:', err);
-			} finally {
-				setIsLoading(false);
-			}
-		};
-
-		const fetchActivities = async () => {
-			try {
-				const response = await fetch(`/api/activities?facilityId=${id}`);
-
-				if (!response.ok) {
+				if (!activitiesResponse.ok) {
 					throw new Error('Failed to fetch activities');
 				}
-
-				const data = await response.json();
-				setActivities(data);
+				const facilityData = await facilityResponse.json();
+				const activitiesData = await activitiesResponse.json();
+				setFacility(facilityData);
+				setActivities(activitiesData);
 			} catch (err) {
-				console.error('Error fetching activities:', err);
+				setError(
+					'Chyba při načítání detailů sportoviště nebo aktivit. Zkuste to prosím později.'
+				);
+				console.error('Error fetching facility/activities:', err);
+			} finally {
+				setIsLoading(false); // Facility data loaded (or failed)
 			}
 		};
 
-		fetchFacility();
-		fetchActivities();
+		const fetchSettings = async () => {
+			try {
+				// Fetch from the public endpoint
+				const settingsResponse = await fetch('/api/settings/public');
+				if (!settingsResponse.ok) {
+					throw new Error('Failed to fetch settings');
+				}
+				const settingsData = await settingsResponse.json();
+				setSettings(settingsData);
+			} catch (err) {
+				console.error('Error fetching settings:', err);
+				// Decide how to handle settings error - maybe set default limits?
+				setError(
+					'Chyba při načítání nastavení systému. Používají se výchozí limity.'
+				);
+				// Optionally set default settings state here if needed
+			} finally {
+				setIsLoadingSettings(false);
+			}
+		};
+
+		fetchFacilityAndActivities();
+		fetchSettings();
 	}, [id]);
 
 	// When date is selected, fetch available time slots
@@ -94,9 +133,8 @@ export default function ReserveFacilityPage() {
 		if (selectedDate) {
 			fetchAvailableTimeSlots();
 		}
-
-		// Reset time when date changes
-		setSelectedTime(undefined);
+		// Reset time slot selection when date changes
+		setSelectedSlotId(undefined);
 	}, [selectedDate]);
 
 	const fetchAvailableTimeSlots = async () => {
@@ -112,14 +150,16 @@ export default function ReserveFacilityPage() {
 				throw new Error('Failed to fetch time slots');
 			}
 
-			const data = await response.json();
+			const data: ApiTimeSlot[] = await response.json();
 
-			// Extract available times from the slots
-			const availableTimes = data
-				.filter((slot: any) => slot.isAvailable)
-				.map((slot: any) => format(new Date(slot.startTime), 'HH:mm'));
+			const availableSlots: AvailableSlot[] = data
+				.filter((slot) => slot.isAvailable)
+				.map((slot) => ({
+					id: slot.id,
+					time: format(new Date(slot.startTime), 'HH:mm')
+				}));
 
-			setAvailableTimeSlots(availableTimes);
+			setAvailableTimeSlots(availableSlots);
 		} catch (err) {
 			console.error('Error fetching time slots:', err);
 			setAvailableTimeSlots([]);
@@ -127,8 +167,10 @@ export default function ReserveFacilityPage() {
 	};
 
 	const handleSubmit = async () => {
-		if (!selectedDate || !selectedTime || !selectedActivity) {
-			setError('Vyberte prosím datum, čas a aktivitu pro vaši rezervaci.');
+		if (!selectedDate || !selectedSlotId || !selectedActivity) {
+			setError(
+				'Vyberte prosím datum, časový slot a aktivitu pro vaši rezervaci.'
+			);
 			return;
 		}
 
@@ -136,15 +178,10 @@ export default function ReserveFacilityPage() {
 		setError(null);
 
 		try {
-			// Combine date and time
-			const reservationDateTime = new Date(selectedDate);
-			const [hours, minutes] = selectedTime.split(':').map(Number);
-			reservationDateTime.setHours(hours, minutes, 0, 0);
-
 			const reservation = {
 				facilityId: id,
 				activityId: selectedActivity,
-				startTime: reservationDateTime.toISOString()
+				slotId: selectedSlotId
 			};
 
 			const response = await fetch('/api/reservations', {
@@ -174,7 +211,13 @@ export default function ReserveFacilityPage() {
 		}
 	};
 
-	if (isLoading) {
+	// Calculate max date for calendar
+	const today = startOfDay(new Date());
+	const maxDate = settings
+		? addDays(today, settings.maxBookingLeadDays)
+		: undefined;
+
+	if (isLoading || isLoadingSettings) {
 		return (
 			<div className="container flex h-[50vh] items-center justify-center">
 				<div className="flex flex-col items-center space-y-4">
@@ -273,10 +316,10 @@ export default function ReserveFacilityPage() {
 											mode="single"
 											selected={selectedDate}
 											onSelect={setSelectedDate}
-											disabled={(date: Date) => {
-												// Disable past dates
-												return date < new Date(new Date().setHours(0, 0, 0, 0));
-											}}
+											disabled={[
+												(date: Date) => date < today, // Disable past dates
+												...(maxDate ? [(date: Date) => date > maxDate] : []) // Disable dates beyond lead days if maxDate is set
+											]}
 											initialFocus
 										/>
 									</PopoverContent>
@@ -286,18 +329,24 @@ export default function ReserveFacilityPage() {
 							<div className="space-y-2">
 								<Label htmlFor="time">Časový slot</Label>
 								<Select
-									value={selectedTime}
-									onValueChange={setSelectedTime}
+									value={selectedSlotId}
+									onValueChange={setSelectedSlotId}
 									disabled={!selectedDate || availableTimeSlots.length === 0}
 								>
 									<SelectTrigger id="time" className="w-full">
-										<SelectValue placeholder="Vyberte čas" />
+										<SelectValue placeholder="Vyberte čas">
+											{
+												availableTimeSlots.find(
+													(slot) => slot.id === selectedSlotId
+												)?.time
+											}
+										</SelectValue>
 									</SelectTrigger>
 									<SelectContent>
 										{availableTimeSlots.length > 0 ? (
-											availableTimeSlots.map((time) => (
-												<SelectItem key={time} value={time}>
-													{time}
+											availableTimeSlots.map((slot) => (
+												<SelectItem key={slot.id} value={slot.id}>
+													{slot.time}
 												</SelectItem>
 											))
 										) : (
@@ -346,7 +395,7 @@ export default function ReserveFacilityPage() {
 							onClick={handleSubmit}
 							disabled={
 								!selectedDate ||
-								!selectedTime ||
+								!selectedSlotId ||
 								!selectedActivity ||
 								isSubmitting
 							}

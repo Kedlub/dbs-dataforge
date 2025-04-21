@@ -188,3 +188,15 @@ export interface UserSearchResult {
 	email: string;
 	phone: string | null;
 }
+
+// System Settings Type
+export interface SystemSettings {
+	id: string;
+	defaultOpeningHour: number;
+	defaultClosingHour: number;
+	maxBookingLeadDays: number;
+	cancellationDeadlineHours: number;
+	maxActiveReservationsPerUser: number;
+	createdAt: string | Date;
+	updatedAt: string | Date;
+}

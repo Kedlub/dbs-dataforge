@@ -180,6 +180,20 @@ model AuditLog {
   @@map("audit_logs")
 }
 
+// System-wide settings (expected to have only one row)
+model SystemSetting {
+  id                           String   @id @default(uuid())
+  defaultOpeningHour           Int      @default(8) @map("default_opening_hour") // Default opening hour (e.g., 8 for 8:00)
+  defaultClosingHour           Int      @default(22) @map("default_closing_hour") // Default closing hour (e.g., 22 for 22:00)
+  maxBookingLeadDays           Int      @default(30) @map("max_booking_lead_days") // How many days in advance users can book
+  cancellationDeadlineHours    Int      @default(24) @map("cancellation_deadline_hours") // Minimum hours before start time for cancellation
+  maxActiveReservationsPerUser Int      @default(5) @map("max_active_reservations_per_user") // Max concurrent active reservations
+  createdAt                    DateTime @default(now()) @map("created_at")
+  updatedAt                    DateTime @updatedAt @map("updated_at")
+
+  @@map("system_settings")
+}
+
 // --- Database Views ---
 
 // View for detailed user reservations

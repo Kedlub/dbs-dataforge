@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
-import { addHours } from 'date-fns';
+import { addHours, addDays, startOfDay, isAfter } from 'date-fns';
 import { getAuthSession } from '@/lib/auth';
+import { getSystemSettings } from '@/lib/settings';
+import { Prisma } from '@/../generated/prisma';
 
 export async function GET(request: NextRequest) {
 	try {
@@ -56,130 +58,146 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
 	try {
 		const session = await getAuthSession();
-
 		if (!session?.user) {
 			return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 });
 		}
 
-		const data = await request.json();
-		const { facilityId, activityId, startTime } = data;
+		// Fetch System Settings
+		const settings = await getSystemSettings();
 
-		if (!facilityId || !activityId || !startTime) {
+		const data = await request.json();
+		// Validate input data structure (basic check, Zod could be used for more robust validation)
+		const { facilityId, activityId, slotId } = data; // Use slotId directly
+
+		if (!facilityId || !activityId || !slotId) {
+			return NextResponse.json(
+				{ error: 'Chybějící pole: facilityId, activityId nebo slotId' },
+				{ status: 400 }
+			);
+		}
+
+		// --- Reservation Rule Checks ---
+
+		// 1. Check Max Active Reservations
+		// Using the custom DB function
+		const activeReservationsResult: [{ count: number }] =
+			await prisma.$queryRaw`SELECT check_user_active_reservations(${session.user.id}::text) as count`;
+		const activeReservationsCount = activeReservationsResult[0]?.count ?? 0;
+
+		if (activeReservationsCount >= settings.maxActiveReservationsPerUser) {
 			return NextResponse.json(
 				{
-					error: 'Missing required fields: facilityId, activityId, or startTime'
+					error: `Překročen maximální počet aktivních rezervací (${settings.maxActiveReservationsPerUser}).`
 				},
 				{ status: 400 }
 			);
 		}
 
-		// Find the facility to check if it exists
-		const facility = await prisma.facility.findUnique({
-			where: { id: facilityId }
+		// 2. Find and Validate Time Slot (includes facility check implicitly)
+		const timeSlot = await prisma.timeSlot.findUnique({
+			where: {
+				id: slotId,
+				facilityId: facilityId, // Ensure slot belongs to the specified facility
+				isAvailable: true, // Ensure slot is available
+				startTime: {
+					gte: new Date() // Ensure slot is in the future
+				}
+			}
 		});
 
-		if (!facility) {
+		if (!timeSlot) {
 			return NextResponse.json(
-				{ error: 'Facility not found' },
-				{ status: 404 }
+				{ error: 'Vybraný časový slot není platný nebo již není k dispozici.' },
+				{ status: 400 }
 			);
 		}
 
-		// Find the activity to check if it exists and get price
+		// 3. Check Max Booking Lead Days
+		const now = new Date();
+		const maxBookingDate = startOfDay(
+			addDays(now, settings.maxBookingLeadDays)
+		);
+		const requestedDate = startOfDay(timeSlot.startTime);
+
+		if (isAfter(requestedDate, maxBookingDate)) {
+			return NextResponse.json(
+				{
+					error: `Rezervaci lze vytvořit maximálně ${settings.maxBookingLeadDays} dní dopředu.`
+				},
+				{ status: 400 }
+			);
+		}
+
+		// 4. Find Activity and check if it belongs to the facility
 		const activity = await prisma.activity.findUnique({
-			where: { id: activityId }
+			where: { id: activityId, isActive: true } // Ensure activity is active
 		});
 
 		if (!activity) {
 			return NextResponse.json(
-				{ error: 'Activity not found' },
+				{ error: 'Aktivita nebyla nalezena nebo není aktivní.' },
 				{ status: 404 }
 			);
 		}
 
-		// Find all facilities with the same name (due to potential duplicates)
-		const allFacilitiesWithSameName = await prisma.facility.findMany({
-			where: { name: facility.name }
-		});
-
-		const facilityIds = allFacilitiesWithSameName.map((f) => f.id);
-		console.log(
-			`Found ${facilityIds.length} facilities with name "${facility.name}"`
-		);
-
-		// Check if activity is associated with any facility with the same name
-		const facilityActivity = await prisma.facilityActivity.findFirst({
+		// Check if this activity is offered at this facility
+		const facilityActivity = await prisma.facilityActivity.findUnique({
 			where: {
-				facilityId: { in: facilityIds },
-				activityId: activityId
+				facilityId_activityId: {
+					facilityId: facilityId,
+					activityId: activityId
+				}
 			}
 		});
 
 		if (!facilityActivity) {
 			return NextResponse.json(
-				{ error: 'This activity is not available at the selected facility' },
+				{ error: 'Tato aktivita není na vybraném sportovišti nabízena.' },
 				{ status: 400 }
 			);
 		}
 
-		const startTimeDate = new Date(startTime);
-		const endTimeDate = addHours(
-			startTimeDate,
-			Math.ceil(activity.durationMinutes / 60)
-		);
-
-		// Find or create a time slot for this reservation
-		let timeSlot = await prisma.timeSlot.findFirst({
-			where: {
-				facilityId: facilityId,
-				startTime: {
-					gte: new Date(startTimeDate.setMinutes(0, 0, 0)),
-					lt: new Date(startTimeDate.setMinutes(59, 59, 999))
-				},
-				isAvailable: true
-			},
-			include: {
-				reservations: true
+		// --- Create Reservation (Transaction) ---
+		const reservation = await prisma.$transaction(async (tx) => {
+			// Re-check availability inside transaction for safety
+			const slotInTx = await tx.timeSlot.findUnique({
+				where: { id: slotId, isAvailable: true }
+			});
+			if (!slotInTx) {
+				throw new Error('Slot became unavailable'); // Transaction will rollback
 			}
-		});
 
-		// If time slot not found or not available, return error
-		if (!timeSlot) {
-			return NextResponse.json(
-				{ error: 'No available time slot found for the selected time' },
-				{ status: 400 }
-			);
-		}
+			// Create the reservation
+			const newReservation = await tx.reservation.create({
+				data: {
+					userId: session.user.id,
+					slotId: timeSlot.id,
+					activityId: activityId,
+					status: 'confirmed', // Default to confirmed
+					totalPrice: activity.price
+				}
+			});
 
-		if (timeSlot.reservations.length > 0) {
-			return NextResponse.json(
-				{ error: 'The selected time slot is already reserved' },
-				{ status: 400 }
-			);
-		}
+			// Mark the time slot as unavailable
+			await tx.timeSlot.update({
+				where: { id: timeSlot.id },
+				data: { isAvailable: false }
+			});
 
-		// Create the reservation with the authenticated user's ID
-		const reservation = await prisma.reservation.create({
-			data: {
-				userId: session.user.id,
-				slotId: timeSlot.id,
-				activityId: activityId,
-				status: 'confirmed',
-				totalPrice: activity.price
-			}
-		});
-
-		// Mark the time slot as unavailable
-		await prisma.timeSlot.update({
-			where: { id: timeSlot.id },
-			data: { isAvailable: false }
+			return newReservation;
 		});
 
 		return NextResponse.json(reservation);
-	} catch (error) {
+	} catch (error: any) {
 		console.error('Error creating reservation:', error);
+		if (error.message === 'Slot became unavailable') {
+			return NextResponse.json(
+				{ error: 'Časový slot byl právě obsazen jinou rezervací.' },
+				{ status: 409 } // Conflict status code
+			);
+		}
 		return NextResponse.json(
-			{ error: 'Failed to create reservation' },
+			{ error: 'Nepodařilo se vytvořit rezervaci' },
 			{ status: 500 }
 		);
 	}

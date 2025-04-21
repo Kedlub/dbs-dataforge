@@ -23,9 +23,9 @@ To fulfill specific project requirements, custom database functions are implemen
 
 The following functions have been created:
 
-1.  `calculate_facility_revenue(p_facility_id UUID, p_start_date DATE, p_end_date DATE) RETURNS DECIMAL`: Calculates the total revenue for a specific facility within a date range based on confirmed reservations.
-2.  `check_user_active_reservations(p_user_id UUID) RETURNS INTEGER`: Returns the count of active (confirmed or pending) future reservations for a given user.
-3.  `get_facility_availability_summary(p_facility_id UUID, p_check_date DATE) RETURNS TEXT`: Provides a textual summary of the available vs. total time slots for a specific facility on a given date.
+1.  `calculate_facility_revenue(p_facility_id TEXT, p_start_date DATE, p_end_date DATE) RETURNS DECIMAL`: Calculates the total revenue for a specific facility within a date range based on confirmed reservations.
+2.  `check_user_active_reservations(p_user_id TEXT) RETURNS INTEGER`: Returns the count of active (confirmed or pending) future reservations for a given user.
+3.  `get_facility_availability_summary(p_facility_id TEXT, p_check_date DATE) RETURNS TEXT`: Provides a textual summary of the available vs. total time slots for a specific facility on a given date.
 
 These functions are defined in the SQL migration file: [prisma/migrations/20250420131104_add_db_functions/migration.sql](mdc:prisma/migrations/20250420131104_add_db_functions/migration.sql).
 
@@ -35,9 +35,9 @@ Similar to functions, custom stored procedures are used for specific actions, es
 
 The following procedures have been created:
 
-1.  `cancel_reservation(p_reservation_id UUID, p_cancellation_reason TEXT)`: Updates a reservation's status to 'cancelled' and records the reason.
-2.  `deactivate_user(p_user_id UUID)`: Sets a user's `is_active` flag to false.
-3.  `assign_employee_shift(p_employee_id UUID, p_start_time TIMESTAMP WITH TIME ZONE, p_end_time TIMESTAMP WITH TIME ZONE, p_shift_type TEXT)`: Inserts a new work shift for an employee.
+1.  `cancel_reservation(p_reservation_id TEXT, p_cancellation_reason TEXT)`: Updates a reservation's status to 'cancelled' and records the reason.
+2.  `deactivate_user(p_user_id TEXT)`: Sets a user's `is_active` flag to false.
+3.  `assign_employee_shift(p_employee_id TEXT, p_start_time TIMESTAMP WITH TIME ZONE, p_end_time TIMESTAMP WITH TIME ZONE, p_shift_type TEXT)`: Inserts a new work shift for an employee.
 
 These procedures are defined in the SQL migration file: [prisma/migrations/20250420132146_add_stored_procedures/migration.sql](mdc:prisma/migrations/20250420132146_add_stored_procedures/migration.sql).
 

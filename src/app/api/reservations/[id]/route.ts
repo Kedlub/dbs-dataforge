@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
 import { z } from 'zod';
+import { getSystemSettings } from '@/lib/settings'; // Import settings getter
+import {
+	isBefore,
+	addHours,
+	subHours,
+	startOfDay,
+	addDays,
+	isAfter
+} from 'date-fns'; // Import date-fns
 
 // Define possible reservation statuses
 const ReservationStatus = z.enum(['pending', 'confirmed', 'cancelled']);
@@ -50,25 +59,45 @@ export async function PATCH(
 
 		const { status, cancellationReason, internalNotes, slotId } =
 			validation.data;
-		const newSlotId = slotId; // Alias for clarity in transaction
+		const newSlotId = slotId;
+
+		// Fetch System Settings for validation
+		const settings = await getSystemSettings();
 
 		// Use transaction for all updates to ensure atomicity
 		const updatedReservation = await prisma.$transaction(async (tx) => {
-			// 1. Fetch existing reservation and related slot details within the transaction
+			// 1. Fetch existing reservation and related slot details
 			const existingReservation = await tx.reservation.findUnique({
 				where: { id },
 				include: {
-					timeSlot: { select: { id: true, facilityId: true } } // Select necessary fields
+					timeSlot: true // Include full timeslot for start time
 				}
 			});
 
-			if (!existingReservation) {
-				// Throw an error to abort the transaction
-				throw new Error('Reservation not found');
+			if (!existingReservation || !existingReservation.timeSlot) {
+				throw new Error('Reservation or its time slot not found');
 			}
 
 			const oldSlotId = existingReservation.slotId;
 			let dataToUpdate: Record<string, any> = {};
+
+			// Check Cancellation Deadline if status is being set to 'cancelled'
+			if (status === 'cancelled') {
+				const now = new Date();
+				const reservationStartTime = new Date(
+					existingReservation.timeSlot.startTime
+				);
+				const cancellationDeadline = subHours(
+					reservationStartTime,
+					settings.cancellationDeadlineHours
+				);
+
+				if (isBefore(cancellationDeadline, now)) {
+					throw new Error(
+						`Rezervaci nelze zrušit méně než ${settings.cancellationDeadlineHours} hodin před jejím začátkem.`
+					);
+				}
+			}
 
 			// 2. Handle Time Slot Change (if newSlotId is provided)
 			if (newSlotId && newSlotId !== oldSlotId) {
@@ -78,17 +107,29 @@ export async function PATCH(
 				});
 
 				if (!newSlot) {
-					throw new Error('New time slot not found');
+					throw new Error('Nový časový slot nebyl nalezen');
 				}
 
 				// Validation: Check if the new slot is available
 				if (!newSlot.isAvailable) {
-					throw new Error('Selected time slot is no longer available');
+					throw new Error('Vybraný nový časový slot již není k dispozici');
 				}
 
 				// Validation: Check if the new slot is for the same facility
 				if (newSlot.facilityId !== existingReservation.timeSlot?.facilityId) {
-					throw new Error('Cannot move reservation to a different facility');
+					throw new Error('Rezervaci nelze přesunout na jiné sportoviště');
+				}
+
+				// Validation: Check Max Booking Lead Days for the *new* slot
+				const nowForNewSlot = new Date();
+				const maxBookingDateNew = startOfDay(
+					addDays(nowForNewSlot, settings.maxBookingLeadDays)
+				);
+				const requestedDateNew = startOfDay(newSlot.startTime);
+				if (isAfter(requestedDateNew, maxBookingDateNew)) {
+					throw new Error(
+						`Nový termín rezervace lze zvolit maximálně ${settings.maxBookingLeadDays} dní dopředu.`
+					);
 				}
 
 				// Mark the new slot as unavailable
@@ -124,6 +165,21 @@ export async function PATCH(
 				// Update timeslot availability based on status changes (if slot wasn't changed)
 				if (!newSlotId && oldSlotId) {
 					if (status === 'cancelled') {
+						// Check deadline again inside transaction before making slot available
+						const now = new Date();
+						const reservationStartTime = new Date(
+							existingReservation.timeSlot.startTime
+						);
+						const cancellationDeadline = subHours(
+							reservationStartTime,
+							settings.cancellationDeadlineHours
+						);
+						if (isBefore(cancellationDeadline, now)) {
+							throw new Error(
+								`Rezervaci nelze zrušit méně než ${settings.cancellationDeadlineHours} hodin před jejím začátkem (kontrola v transakci).`
+							);
+						}
+
 						await tx.timeSlot.update({
 							where: { id: oldSlotId },
 							data: { isAvailable: true }
@@ -140,7 +196,7 @@ export async function PATCH(
 							});
 						} else {
 							throw new Error(
-								'Cannot update status: Original time slot is no longer available.'
+								'Nelze aktualizovat status: Původní časový slot již není dostupný.'
 							);
 						}
 					}
@@ -152,7 +208,7 @@ export async function PATCH(
 				dataToUpdate.internalNotes = internalNotes;
 			}
 
-			// 5. Perform the Reservation Update (if there's anything to update)
+			// 5. Perform the Reservation Update
 			if (Object.keys(dataToUpdate).length === 0) {
 				// No actual changes requested, return existing reservation
 				return existingReservation;
@@ -170,22 +226,27 @@ export async function PATCH(
 	} catch (error: any) {
 		console.error('Error updating reservation:', error);
 
-		// Handle specific transaction errors
-		if (error.message === 'Reservation not found') {
-			return NextResponse.json({ error: error.message }, { status: 404 });
-		}
+		// Handle custom errors thrown within the transaction
 		if (
-			error.message === 'New time slot not found' ||
-			error.message === 'Cannot move reservation to a different facility'
+			error.message.startsWith('Rezervaci nelze zrušit') ||
+			error.message.startsWith('Nový časový slot') ||
+			error.message.startsWith('Rezervaci nelze přesunout') ||
+			error.message.startsWith('Nelze aktualizovat status') ||
+			error.message.startsWith('Nový termín rezervace lze zvolit')
 		) {
 			return NextResponse.json({ error: error.message }, { status: 400 });
 		}
-		if (
-			error.message === 'Selected time slot is no longer available' ||
-			error.message ===
-				'Cannot update status: Original time slot is no longer available.'
-		) {
+		if (error.message === 'Reservation or its time slot not found') {
+			return NextResponse.json({ error: error.message }, { status: 404 });
+		}
+		if (error.message === 'Vybraný nový časový slot již není k dispozici') {
 			return NextResponse.json({ error: error.message }, { status: 409 }); // Conflict
+		}
+
+		// Handle specific transaction errors (fallback, less specific)
+		if (error.message === 'Reservation not found') {
+			// Less specific fallback
+			return NextResponse.json({ error: error.message }, { status: 404 });
 		}
 
 		// Handle Zod validation errors specifically

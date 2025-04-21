@@ -106,6 +106,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 					}
 				]
 			});
+
+			// Items for admin role only
+			commonItems.push({
+				title: 'Nastavení',
+				url: '/app/settings',
+				icon: Settings,
+				isActive: pathname === '/app/settings'
+			});
 		}
 
 		// Items for employee or admin role

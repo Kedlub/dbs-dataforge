@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { CalendarX, Check, Loader2, RefreshCw } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, isBefore, subHours } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import {
 	Card,
@@ -13,7 +13,7 @@ import {
 	CardTitle
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Reservation } from '@/lib/types';
+import { Reservation, SystemSettings } from '@/lib/types';
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -27,24 +27,40 @@ import {
 
 export default function MyReservations() {
 	const [reservations, setReservations] = useState<Reservation[]>([]);
+	const [settings, setSettings] = useState<Pick<
+		SystemSettings,
+		'cancellationDeadlineHours'
+	> | null>(null);
 	const [isLoading, setIsLoading] = useState(true);
 	const [error, setError] = useState<string | null>(null);
 	const [cancellingId, setCancellingId] = useState<string | null>(null);
 	const [isCancelling, setIsCancelling] = useState(false);
 	const [showCancelDialog, setShowCancelDialog] = useState(false);
 
-	const fetchReservations = async () => {
+	const fetchData = async () => {
 		setIsLoading(true);
 		setError(null);
 		try {
-			const response = await fetch('/api/reservations');
-			if (!response.ok) {
-				throw new Error('Failed to fetch reservations');
+			const [reservationsResponse, settingsResponse] = await Promise.all([
+				fetch('/api/reservations'),
+				fetch('/api/settings/public')
+			]);
+
+			if (!reservationsResponse.ok) {
+				throw new Error('Nepodařilo se načíst rezervace.');
 			}
-			const data = await response.json();
-			setReservations(data);
-		} catch (err) {
-			setError('Nepodařilo se načíst rezervace. Zkuste to prosím znovu.');
+			if (!settingsResponse.ok) {
+				console.error('Failed to fetch system settings');
+				throw new Error('Nepodařilo se načíst nastavení systému.');
+			}
+
+			const reservationsData = await reservationsResponse.json();
+			const settingsData = await settingsResponse.json();
+
+			setReservations(reservationsData);
+			setSettings(settingsData);
+		} catch (err: any) {
+			setError(err.message || 'Nastala neznámá chyba při načítání dat.');
 			console.error(err);
 		} finally {
 			setIsLoading(false);
@@ -52,8 +68,18 @@ export default function MyReservations() {
 	};
 
 	useEffect(() => {
-		fetchReservations();
+		fetchData();
 	}, []);
+
+	const canCancelReservation = (reservation: Reservation): boolean => {
+		if (!settings || !reservation.timeSlot?.startTime) {
+			return false;
+		}
+		const now = new Date();
+		const startTime = new Date(reservation.timeSlot.startTime);
+		const deadline = subHours(startTime, settings.cancellationDeadlineHours);
+		return isBefore(now, deadline);
+	};
 
 	const getStatusBadge = (status: string) => {
 		switch (status.toLowerCase()) {
@@ -142,11 +168,7 @@ export default function MyReservations() {
 							Zobrazte a spravujte své nadcházející i minulé rezervace
 						</p>
 					</div>
-					<Button
-						variant="outline"
-						onClick={fetchReservations}
-						disabled={isLoading}
-					>
+					<Button variant="outline" onClick={fetchData} disabled={isLoading}>
 						<RefreshCw
 							className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`}
 						/>
@@ -178,72 +200,87 @@ export default function MyReservations() {
 				)}
 
 				<div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-					{reservations.map((reservation) => (
-						<Card key={reservation.id}>
-							<CardHeader>
-								<div className="flex items-start justify-between">
-									<CardTitle className="text-lg font-medium">
-										{reservation.activity?.name || 'Aktivita'}
-									</CardTitle>
-									{getStatusBadge(reservation.status)}
-								</div>
-								<CardDescription>
-									Rezervováno dne{' '}
-									{format(new Date(reservation.createdAt), 'MMM d, yyyy')}
-								</CardDescription>
-							</CardHeader>
-							<CardContent>
-								<div className="space-y-3">
-									<div>
-										<p className="text-sm font-medium">Časový slot</p>
-										<p className="text-muted-foreground text-sm">
-											{reservation.timeSlot ? (
-												<>
-													{format(
-														new Date(reservation.timeSlot.startTime),
-														'PPP'
-													)}
-													<br />
-													{format(
-														new Date(reservation.timeSlot.startTime),
-														'p'
-													)}{' '}
-													-{format(new Date(reservation.timeSlot.endTime), 'p')}
-												</>
-											) : (
-												'Časové informace nejsou k dispozici'
-											)}
-										</p>
+					{reservations.map((reservation) => {
+						const isCancellable = canCancelReservation(reservation);
+						return (
+							<Card key={reservation.id}>
+								<CardHeader>
+									<div className="flex items-start justify-between">
+										<CardTitle className="text-lg font-medium">
+											{reservation.activity?.name || 'Aktivita'}
+										</CardTitle>
+										{getStatusBadge(reservation.status)}
 									</div>
-									<div>
-										<p className="text-sm font-medium">Cena</p>
-										<p className="text-muted-foreground text-sm">
-											{parseFloat(reservation.totalPrice.toString()).toFixed(2)}{' '}
-											Kč
-										</p>
-									</div>
-								</div>
-							</CardContent>
-							<CardFooter>
-								{reservation.status.toLowerCase() === 'confirmed' && (
-									<Button
-										variant="destructive"
-										onClick={() => openCancelDialog(reservation.id)}
-										className="w-full"
-									>
-										Zrušit rezervaci
-									</Button>
-								)}
-								{reservation.status.toLowerCase() === 'cancelled' &&
-									reservation.cancellationReason && (
-										<div className="text-muted-foreground w-full text-sm">
-											<span className="font-medium">Důvod zrušení:</span>{' '}
-											{reservation.cancellationReason}
+									<CardDescription>
+										Rezervováno dne{' '}
+										{format(new Date(reservation.createdAt), 'MMM d, yyyy')}
+									</CardDescription>
+								</CardHeader>
+								<CardContent>
+									<div className="space-y-3">
+										<div>
+											<p className="text-sm font-medium">Časový slot</p>
+											<p className="text-muted-foreground text-sm">
+												{reservation.timeSlot ? (
+													<>
+														{format(
+															new Date(reservation.timeSlot.startTime),
+															'PPP'
+														)}
+														<br />
+														{format(
+															new Date(reservation.timeSlot.startTime),
+															'p'
+														)}{' '}
+														-
+														{format(
+															new Date(reservation.timeSlot.endTime),
+															'p'
+														)}
+													</>
+												) : (
+													'Časové informace nejsou k dispozici'
+												)}
+											</p>
 										</div>
+										<div>
+											<p className="text-sm font-medium">Cena</p>
+											<p className="text-muted-foreground text-sm">
+												{parseFloat(reservation.totalPrice.toString()).toFixed(
+													2
+												)}{' '}
+												Kč
+											</p>
+										</div>
+									</div>
+								</CardContent>
+								<CardFooter>
+									{reservation.status.toLowerCase() === 'confirmed' && (
+										<Button
+											variant="destructive"
+											onClick={() => openCancelDialog(reservation.id)}
+											className="w-full"
+											disabled={!isCancellable}
+											title={
+												!isCancellable
+													? `Rezervaci lze zrušit nejpozději ${settings?.cancellationDeadlineHours ?? '-'} hodin předem`
+													: ''
+											}
+										>
+											Zrušit rezervaci
+										</Button>
 									)}
-							</CardFooter>
-						</Card>
-					))}
+									{reservation.status.toLowerCase() === 'cancelled' &&
+										reservation.cancellationReason && (
+											<div className="text-muted-foreground w-full text-sm">
+												<span className="font-medium">Důvod zrušení:</span>{' '}
+												{reservation.cancellationReason}
+											</div>
+										)}
+								</CardFooter>
+							</Card>
+						);
+					})}
 				</div>
 			</div>
 

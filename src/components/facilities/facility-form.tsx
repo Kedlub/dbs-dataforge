@@ -93,10 +93,16 @@ const parseInputToHour = (timeString: string): number => {
 };
 
 interface FacilityFormProps {
-	initialData?: Facility & { activities?: { activityId: string }[] }; // Include activities if available
+	initialData?: Facility & { activities?: { activityId: string }[] }; // For edit mode
+	defaultOpeningHour?: number; // Add default for create mode
+	defaultClosingHour?: number; // Add default for create mode
 }
 
-export function FacilityForm({ initialData }: FacilityFormProps) {
+export function FacilityForm({
+	initialData,
+	defaultOpeningHour,
+	defaultClosingHour
+}: FacilityFormProps) {
 	const router = useRouter();
 	const [isLoading, setIsLoading] = useState(false);
 	const [selectedActivityIds, setSelectedActivityIds] = useState<string[]>([]);
@@ -111,42 +117,50 @@ export function FacilityForm({ initialData }: FacilityFormProps) {
 
 	const form = useForm<FacilityFormValues>({
 		resolver: zodResolver(facilityFormSchema),
-		defaultValues: {
-			name: '',
-			description: '',
-			capacity: 1,
-			status: 'ACTIVE',
-			openingHour: 8, // Use number directly
-			closingHour: 22, // Use number directly
-			imageUrl: '',
-			activityIds: [] // Initialize activityIds
-		}
+		defaultValues: isEditMode
+			? {
+					name: initialData?.name ?? '',
+					description: initialData?.description ?? '',
+					capacity: initialData?.capacity ?? 1,
+					status: (initialData?.status?.toUpperCase() ??
+						'ACTIVE') as FacilityStatusString,
+					openingHour: initialData?.openingHour ?? 8, // Fallback if somehow missing
+					closingHour: initialData?.closingHour ?? 22, // Fallback if somehow missing
+					imageUrl: initialData?.imageUrl ?? '',
+					activityIds: initialData?.activities?.map((a) => a.activityId) ?? []
+				}
+			: {
+					name: '',
+					description: '',
+					capacity: 1,
+					status: 'ACTIVE',
+					openingHour: defaultOpeningHour ?? 8, // Use prop or fallback
+					closingHour: defaultClosingHour ?? 22, // Use prop or fallback
+					imageUrl: '',
+					activityIds: []
+				}
 	});
 
-	// Pre-fill form and selected activities if in edit mode
+	// Pre-fill form and selected activities if in edit mode (Effect now mainly handles activities)
 	useEffect(() => {
 		if (isEditMode && initialData) {
-			form.reset({
-				name: initialData.name,
-				description: initialData.description || '',
-				capacity: initialData.capacity,
-				status: (initialData.status?.toUpperCase() ??
-					'ACTIVE') as FacilityStatusString,
-				openingHour: initialData.openingHour,
-				closingHour: initialData.closingHour,
-				imageUrl: initialData.imageUrl || '',
-				activityIds: initialData.activities?.map((a) => a.activityId) || [] // Pre-fill from initialData
-			});
-			// Set the state for checkboxes based on initialData
 			setSelectedActivityIds(
 				initialData.activities?.map((a) => a.activityId) || []
 			);
-		} else {
-			// Reset selections when creating a new facility
-			form.reset();
+		} else if (!isEditMode) {
 			setSelectedActivityIds([]);
+			form.reset({
+				name: '',
+				description: '',
+				capacity: 1,
+				status: 'ACTIVE',
+				openingHour: defaultOpeningHour ?? 8,
+				closingHour: defaultClosingHour ?? 22,
+				imageUrl: '',
+				activityIds: []
+			});
 		}
-	}, [initialData, isEditMode, form]);
+	}, [initialData, isEditMode, form, defaultOpeningHour, defaultClosingHour]);
 
 	// Handle checkbox changes
 	const handleActivityCheckChange = (
