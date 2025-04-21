@@ -63,12 +63,14 @@ export async function POST(
 		// 2. Use transaction: Delete existing future slots & create new ones
 		await prisma.$transaction(async (tx) => {
 			// Delete slots starting from today onwards for this facility
+			// IMPORTANT: Only delete AVAILABLE slots to avoid deleting reservations
 			await tx.timeSlot.deleteMany({
 				where: {
 					facilityId: facility.id,
 					startTime: {
 						gte: startDate // Delete slots from the beginning of today
-					}
+					},
+					isAvailable: true // Only delete slots that are not reserved
 				}
 			});
 
@@ -76,7 +78,7 @@ export async function POST(
 			if (slotsToCreate.length > 0) {
 				await tx.timeSlot.createMany({
 					data: slotsToCreate,
-					skipDuplicates: true // Should not be necessary after delete, but safe
+					skipDuplicates: true // Keep this for safety
 				});
 			}
 		});
