@@ -143,15 +143,47 @@ export async function POST(request: Request) {
 			for (const facility of facilities) {
 				try {
 					const result = await prisma.$queryRaw<
-						[{ calculate_facility_revenue: number | null }]
+						[{ calculate_facility_revenue: number | string | null }]
 					>`SELECT calculate_facility_revenue(${facility.id}::TEXT, ${sqlStartDate}::DATE, ${sqlEndDate}::DATE)`;
 
-					const facilityRevenue = result[0]?.calculate_facility_revenue ?? 0;
+					// Explicitly parse the result to ensure it's a number, handling string, number, or Decimal object
+					const rawRevenue = result[0]?.calculate_facility_revenue;
+					let facilityRevenue: number;
+
+					if (typeof rawRevenue === 'number') {
+						facilityRevenue = rawRevenue;
+					} else if (typeof rawRevenue === 'string') {
+						facilityRevenue = parseFloat(rawRevenue);
+					} else if (
+						rawRevenue &&
+						typeof rawRevenue === 'object' &&
+						typeof (rawRevenue as any).toNumber === 'function'
+					) {
+						// Handle potential Decimal.js object
+						facilityRevenue = (rawRevenue as any).toNumber();
+					} else {
+						facilityRevenue = 0; // Default case including null/undefined
+					}
+
+					if (isNaN(facilityRevenue)) {
+						console.error(
+							`Failed to parse revenue for facility ${facility.id}. Raw value:`,
+							rawRevenue
+						);
+						revenueByFacility[facility.id] = {
+							name: facility.name,
+							revenue: 0,
+							error: 'Invalid revenue data received'
+						};
+						continue; // Skip adding NaN to totalRevenue
+					}
+
 					revenueByFacility[facility.id] = {
 						name: facility.name,
-						revenue: facilityRevenue
+						revenue: facilityRevenue // Now guaranteed to be a number
 					};
-					totalRevenue += facilityRevenue;
+					// Ensure totalRevenue is treated as a number before adding
+					totalRevenue = Number(totalRevenue) + facilityRevenue; // Explicit conversion before addition
 				} catch (dbError) {
 					console.error(
 						`Error calculating revenue for facility ${facility.id}:`,

@@ -173,7 +173,7 @@ export async function POST(request: NextRequest) {
 					userId: session.user.id,
 					slotId: timeSlot.id,
 					activityId: activityId,
-					status: 'confirmed', // Default to confirmed
+					status: 'pending', // Default to pending
 					totalPrice: activity.price
 				}
 			});

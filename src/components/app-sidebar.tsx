@@ -94,17 +94,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 				title: 'Reporty',
 				url: '/app/reports',
 				icon: BarChart,
-				isActive: pathname.startsWith('/app/reports'),
-				items: [
-					{
-						title: 'Statistiky využití',
-						url: '/app/reports/usage'
-					},
-					{
-						title: 'Finanční reporty',
-						url: '/app/reports/financial'
-					}
-				]
+				isActive: pathname.startsWith('/app/reports')
 			});
 
 			// Items for admin role only
