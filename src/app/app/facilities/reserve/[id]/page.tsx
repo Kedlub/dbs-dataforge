@@ -334,13 +334,7 @@ export default function ReserveFacilityPage() {
 									disabled={!selectedDate || availableTimeSlots.length === 0}
 								>
 									<SelectTrigger id="time" className="w-full">
-										<SelectValue placeholder="Vyberte čas">
-											{
-												availableTimeSlots.find(
-													(slot) => slot.id === selectedSlotId
-												)?.time
-											}
-										</SelectValue>
+										<SelectValue placeholder="Vyberte čas" />
 									</SelectTrigger>
 									<SelectContent>
 										{availableTimeSlots.length > 0 ? (
