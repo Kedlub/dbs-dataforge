@@ -1,36 +1,79 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DataForge - Sportovní centrum "ActiveLife"
 
-## Getting Started
+Databázová aplikace pro správu rezervací sportovního centra vytvořená v rámci předmětu Databázové systémy 2 na UHK.
 
-First, run the development server:
+## Funkce
+
+- 👥 **Správa uživatelů** - Registrace, přihlášení a správa rolí (admin, zaměstnanec, uživatel)
+- 🏟️ **Správa sportovišť** - Evidence sportovišť, jejich kapacit a dostupnosti
+- 📅 **Rezervační systém** - Intuitivní systém pro rezervace časových slotů
+- 👷 **Správa směn** - Plánování směn zaměstnanců
+- 📊 **Reporty** - Generování přehledů a statistik
+
+## Technologie
+
+- **Frontend:** Next.js 14, React, TypeScript, Tailwind CSS, shadcn/ui
+- **Backend:** Next.js API Routes, Prisma ORM
+- **Databáze:** PostgreSQL s vlastními funkcemi, procedurami a triggery
+- **Autentizace:** NextAuth.js
+- **Deployment:** Docker, Docker Compose
+
+## Instalace
+
+1. Naklonujte repozitář:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/Kedlub/dbs-dataforge.git
+cd dbs-dataforge
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Nainstalujte závislosti:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+pnpm install
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+3. Vytvořte soubor `.env` podle vzoru:
 
-## Learn More
+```env
+DATABASE_URL="postgresql://user:password@localhost:5432/activelife"
+NEXTAUTH_SECRET="your-secret-here"
+NEXTAUTH_URL="http://localhost:3000"
+```
 
-To learn more about Next.js, take a look at the following resources:
+4. Spusťte databázi a aplikaci pomocí Docker Compose:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+docker-compose up -d
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Alternativně pro vývoj:
 
-## Deploy on Vercel
+```bash
+pnpm prisma migrate dev  # Aplikuje migrace
+pnpm prisma db seed     # Naplní databázi testovacími daty
+pnpm dev                # Spustí vývojový server
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Testovací účty
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Admin:** admin@activelife.cz (heslo: admin123)
+- **Zaměstnanec:** zamestnanec@activelife.cz (heslo: zam123)
+- **Uživatel:** petr.svoboda@example.com (heslo: user123)
+
+## Struktura projektu
+
+- `/src` - Zdrojové kódy Next.js aplikace
+- `/prisma` - Databázový model, migrace a seed skripty
+- `/public` - Statické soubory
+- `/.cursor` - Dokumentace a pravidla projektu
+
+## Tým DataForge
+
+- Jakub Doležal
+- Jakub Kyzr
+- Václav Havelka
+
+## Licence
+
+Tento projekt je vytvořen pro vzdělávací účely v rámci předmětu Databázové systémy 2 na UHK.
