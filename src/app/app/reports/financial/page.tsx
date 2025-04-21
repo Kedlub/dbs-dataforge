@@ -60,7 +60,13 @@ export default function FinancialReportPage() {
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	const form = useForm<FinancialReportFormData>({
-		resolver: zodResolver(financialReportSchema)
+		resolver: zodResolver(financialReportSchema),
+		defaultValues: {
+			title: '',
+			description: '',
+			startDate: undefined, // Or null, handled by UI
+			endDate: undefined // Or null, handled by UI
+		}
 	});
 
 	const onSubmit = async (data: FinancialReportFormData) => {

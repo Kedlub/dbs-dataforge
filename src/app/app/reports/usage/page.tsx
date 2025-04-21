@@ -59,7 +59,13 @@ export default function UsageReportPage() {
 	const [isSubmitting, setIsSubmitting] = useState(false);
 
 	const form = useForm<UsageReportFormData>({
-		resolver: zodResolver(usageReportSchema)
+		resolver: zodResolver(usageReportSchema),
+		defaultValues: {
+			title: '',
+			description: '',
+			startDate: undefined, // Or null, handled by UI
+			endDate: undefined // Or null, handled by UI
+		}
 	});
 
 	const onSubmit = async (data: UsageReportFormData) => {
