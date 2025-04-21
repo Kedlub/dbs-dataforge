@@ -9,17 +9,19 @@ const ReservationStatus = z.enum(['pending', 'confirmed', 'cancelled']);
 const updateSchema = z
 	.object({
 		status: ReservationStatus.optional(),
-		cancellationReason: z.string().nullable().optional(), // Allow null or string
-		internalNotes: z.string().nullable().optional() // Add internalNotes
+		cancellationReason: z.string().nullable().optional(),
+		internalNotes: z.string().nullable().optional(),
+		slotId: z.string().uuid('Invalid Time Slot ID').optional() // Add slotId
 	})
 	.refine(
 		(data) =>
 			data.status !== undefined ||
 			data.cancellationReason !== undefined ||
-			data.internalNotes !== undefined, // Add internalNotes to refine condition
+			data.internalNotes !== undefined ||
+			data.slotId !== undefined, // Add slotId to refine condition
 		{
 			message:
-				'At least one field (status, cancellationReason, or internalNotes) must be provided for update'
+				'At least one field (status, cancellationReason, internalNotes, or slotId) must be provided for update'
 		}
 	);
 
@@ -46,82 +48,120 @@ export async function PATCH(
 			);
 		}
 
-		const dataToUpdate: Record<string, any> = {};
-		if (validation.data.status !== undefined) {
-			dataToUpdate.status = validation.data.status;
-		}
-		// Handle cancellationReason based on status
-		if (
-			validation.data.status !== undefined &&
-			validation.data.status !== 'cancelled'
-		) {
-			dataToUpdate.cancellationReason = null;
-		} else if (validation.data.cancellationReason !== undefined) {
-			dataToUpdate.cancellationReason = validation.data.cancellationReason;
-		}
+		const { status, cancellationReason, internalNotes, slotId } =
+			validation.data;
+		const newSlotId = slotId; // Alias for clarity in transaction
 
-		// Add internalNotes if provided
-		if (validation.data.internalNotes !== undefined) {
-			dataToUpdate.internalNotes = validation.data.internalNotes;
-		}
-
-		// Check if reservation exists before trying to update
-		const existingReservation = await prisma.reservation.findUnique({
-			where: { id },
-			include: {
-				timeSlot: true // Needed for the isAvailable logic
-			}
-		});
-
-		if (!existingReservation) {
-			return NextResponse.json(
-				{ error: 'Reservation not found' },
-				{ status: 404 }
-			);
-		}
-
-		// Use transaction for update and potential timeslot change
+		// Use transaction for all updates to ensure atomicity
 		const updatedReservation = await prisma.$transaction(async (tx) => {
+			// 1. Fetch existing reservation and related slot details within the transaction
+			const existingReservation = await tx.reservation.findUnique({
+				where: { id },
+				include: {
+					timeSlot: { select: { id: true, facilityId: true } } // Select necessary fields
+				}
+			});
+
+			if (!existingReservation) {
+				// Throw an error to abort the transaction
+				throw new Error('Reservation not found');
+			}
+
+			const oldSlotId = existingReservation.slotId;
+			let dataToUpdate: Record<string, any> = {};
+
+			// 2. Handle Time Slot Change (if newSlotId is provided)
+			if (newSlotId && newSlotId !== oldSlotId) {
+				// Fetch the new target time slot
+				const newSlot = await tx.timeSlot.findUnique({
+					where: { id: newSlotId }
+				});
+
+				if (!newSlot) {
+					throw new Error('New time slot not found');
+				}
+
+				// Validation: Check if the new slot is available
+				if (!newSlot.isAvailable) {
+					throw new Error('Selected time slot is no longer available');
+				}
+
+				// Validation: Check if the new slot is for the same facility
+				if (newSlot.facilityId !== existingReservation.timeSlot?.facilityId) {
+					throw new Error('Cannot move reservation to a different facility');
+				}
+
+				// Mark the new slot as unavailable
+				await tx.timeSlot.update({
+					where: { id: newSlotId },
+					data: { isAvailable: false }
+				});
+
+				// Make the old slot available again (if it existed and status wasn't cancelled)
+				if (oldSlotId && existingReservation.status !== 'cancelled') {
+					await tx.timeSlot.update({
+						where: { id: oldSlotId },
+						data: { isAvailable: true }
+					});
+				}
+
+				// Add slotId to the reservation update data
+				dataToUpdate.slotId = newSlotId;
+			}
+
+			// 3. Handle Status Change
+			if (status !== undefined) {
+				dataToUpdate.status = status;
+
+				// Handle cancellation reason based on status
+				if (status !== 'cancelled') {
+					dataToUpdate.cancellationReason = null;
+				} else if (cancellationReason !== undefined) {
+					// Only set cancellation reason if status is 'cancelled'
+					dataToUpdate.cancellationReason = cancellationReason;
+				}
+
+				// Update timeslot availability based on status changes (if slot wasn't changed)
+				if (!newSlotId && oldSlotId) {
+					if (status === 'cancelled') {
+						await tx.timeSlot.update({
+							where: { id: oldSlotId },
+							data: { isAvailable: true }
+						});
+					} else if (existingReservation.status === 'cancelled') {
+						// Attempt to re-book the slot if changing status FROM cancelled
+						const currentOldSlot = await tx.timeSlot.findUnique({
+							where: { id: oldSlotId }
+						});
+						if (currentOldSlot?.isAvailable) {
+							await tx.timeSlot.update({
+								where: { id: oldSlotId },
+								data: { isAvailable: false }
+							});
+						} else {
+							throw new Error(
+								'Cannot update status: Original time slot is no longer available.'
+							);
+						}
+					}
+				}
+			}
+
+			// 4. Handle Internal Notes Change
+			if (internalNotes !== undefined) {
+				dataToUpdate.internalNotes = internalNotes;
+			}
+
+			// 5. Perform the Reservation Update (if there's anything to update)
+			if (Object.keys(dataToUpdate).length === 0) {
+				// No actual changes requested, return existing reservation
+				return existingReservation;
+			}
+
 			const updated = await tx.reservation.update({
 				where: { id },
 				data: dataToUpdate
 			});
-
-			// If the status was changed to 'cancelled', make the time slot available again
-			if (dataToUpdate.status === 'cancelled' && existingReservation.timeSlot) {
-				await tx.timeSlot.update({
-					where: { id: existingReservation.timeSlot.id },
-					data: { isAvailable: true }
-				});
-			}
-			// **Important**: If status changes FROM cancelled TO something else,
-			// and the timeslot *was* associated, we should attempt to make it unavailable again
-			// (assuming it's still available)
-			else if (
-				existingReservation.status === 'cancelled' &&
-				dataToUpdate.status !== 'cancelled' &&
-				existingReservation.timeSlot
-			) {
-				// Check if the slot is currently available before trying to take it
-				const currentSlot = await tx.timeSlot.findUnique({
-					where: { id: existingReservation.timeSlot.id }
-				});
-				if (currentSlot?.isAvailable) {
-					await tx.timeSlot.update({
-						where: { id: existingReservation.timeSlot.id },
-						data: { isAvailable: false }
-					});
-				} else {
-					// Handle case where slot is already taken - perhaps throw error?
-					// For now, we just won't update it, but this could lead to double booking if not handled.
-					// Consider throwing an error to inform the client.
-					console.warn(
-						`Cannot re-activate reservation ${id}: Time slot ${existingReservation.timeSlot.id} is already booked.`
-					);
-					// Optionally throw an error:
-					// throw new Error('Cannot update reservation: Time slot is no longer available.');
-				}
-			}
 
 			return updated;
 		});
@@ -129,10 +169,34 @@ export async function PATCH(
 		return NextResponse.json(updatedReservation);
 	} catch (error: any) {
 		console.error('Error updating reservation:', error);
-		// Check if it's a specific error we threw (like timeslot unavailable)
-		if (error.message.includes('Time slot is no longer available')) {
+
+		// Handle specific transaction errors
+		if (error.message === 'Reservation not found') {
+			return NextResponse.json({ error: error.message }, { status: 404 });
+		}
+		if (
+			error.message === 'New time slot not found' ||
+			error.message === 'Cannot move reservation to a different facility'
+		) {
+			return NextResponse.json({ error: error.message }, { status: 400 });
+		}
+		if (
+			error.message === 'Selected time slot is no longer available' ||
+			error.message ===
+				'Cannot update status: Original time slot is no longer available.'
+		) {
 			return NextResponse.json({ error: error.message }, { status: 409 }); // Conflict
 		}
+
+		// Handle Zod validation errors specifically
+		if (error instanceof z.ZodError) {
+			return NextResponse.json(
+				{ error: 'Invalid input', details: error.errors },
+				{ status: 400 }
+			);
+		}
+
+		// Generic error handler
 		return NextResponse.json(
 			{ error: 'Failed to update reservation' },
 			{ status: 500 }

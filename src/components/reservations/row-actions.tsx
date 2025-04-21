@@ -44,6 +44,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { EditTimeSlotDialog } from './edit-timeslot-dialog';
 
 interface DataTableRowActionsProps<TData> {
 	row: Row<TData>;
@@ -61,6 +62,7 @@ export function DataTableRowActions<TData extends Reservation>({
 	const [showCancelDialog, setShowCancelDialog] = useState(false);
 	const [showEditStatusDialog, setShowEditStatusDialog] = useState(false);
 	const [showEditNotesDialog, setShowEditNotesDialog] = useState(false);
+	const [showEditTimeSlotDialog, setShowEditTimeSlotDialog] = useState(false);
 	const [cancellationReason, setCancellationReason] = useState('');
 	const [newStatus, setNewStatus] = useState<ResStatus>(
 		reservation.status as ResStatus
@@ -191,22 +193,25 @@ export function DataTableRowActions<TData extends Reservation>({
 					<DropdownMenuLabel>Akce</DropdownMenuLabel>
 					<DropdownMenuItem
 						onSelect={(e) => e.preventDefault()}
-						onClick={() => {
-							setNewStatus(reservation.status as ResStatus);
-							setShowEditStatusDialog(true);
-						}}
+						onClick={() => setShowEditStatusDialog(true)}
 						disabled={reservation.status === 'cancelled'}
 					>
 						Upravit stav
 					</DropdownMenuItem>
 					<DropdownMenuItem
 						onSelect={(e) => e.preventDefault()}
-						onClick={() => {
-							setInternalNotes(reservation.internalNotes ?? '');
-							setShowEditNotesDialog(true);
-						}}
+						onClick={() => setShowEditNotesDialog(true)}
 					>
 						Upravit poznámky
+					</DropdownMenuItem>
+					<DropdownMenuItem
+						onSelect={(e) => e.preventDefault()}
+						onClick={() => setShowEditTimeSlotDialog(true)}
+						disabled={
+							!reservation.timeSlot || reservation.status === 'cancelled'
+						}
+					>
+						Změnit časový slot
 					</DropdownMenuItem>
 					<DropdownMenuSeparator />
 					<DropdownMenuItem
@@ -352,6 +357,14 @@ export function DataTableRowActions<TData extends Reservation>({
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
+
+			{reservation.timeSlot && (
+				<EditTimeSlotDialog
+					isOpen={showEditTimeSlotDialog}
+					onClose={() => setShowEditTimeSlotDialog(false)}
+					reservation={reservation}
+				/>
+			)}
 		</>
 	);
 }
