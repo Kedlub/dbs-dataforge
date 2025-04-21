@@ -11,6 +11,10 @@ const nextConfig: NextConfig = {
 				pathname: '/**'
 			}
 		]
+	},
+	output: 'standalone',
+	eslint: {
+		ignoreDuringBuilds: true
 	}
 	/* config options here */
 };

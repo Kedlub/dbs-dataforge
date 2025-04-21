@@ -36,10 +36,10 @@ const updateSchema = z
 
 export async function PATCH(
 	request: NextRequest,
-	{ params }: { params: { id: string } }
+	{ params }: { params: Promise<{ id: string }> }
 ) {
 	try {
-		const id = params.id;
+		const { id } = await params;
 		if (!id) {
 			return NextResponse.json(
 				{ error: 'Reservation ID is required' },
@@ -79,7 +79,7 @@ export async function PATCH(
 			}
 
 			const oldSlotId = existingReservation.slotId;
-			let dataToUpdate: Record<string, any> = {};
+			const dataToUpdate: Record<string, any> = {};
 
 			// Check Cancellation Deadline if status is being set to 'cancelled'
 			if (status === 'cancelled') {
@@ -267,10 +267,10 @@ export async function PATCH(
 
 export async function DELETE(
 	request: NextRequest,
-	{ params }: { params: { id: string } }
+	{ params }: { params: Promise<{ id: string }> }
 ) {
 	try {
-		const id = params.id;
+		const { id } = await params;
 
 		if (!id) {
 			return NextResponse.json(

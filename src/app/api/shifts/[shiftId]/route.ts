@@ -18,14 +18,14 @@ const updateShiftSchema = z
 // PUT handler to update an existing shift
 export async function PUT(
 	request: Request,
-	{ params }: { params: { shiftId: string } }
+	{ params }: { params: Promise<{ shiftId: string }> }
 ) {
 	const user = await getCurrentUser();
 	if (!user || user.role?.name !== 'ADMIN') {
 		return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 	}
 
-	const shiftId = params.shiftId;
+	const { shiftId } = await params;
 
 	try {
 		const body = await request.json();
@@ -84,14 +84,14 @@ export async function PUT(
 // DELETE handler to delete a shift
 export async function DELETE(
 	request: Request,
-	{ params }: { params: { shiftId: string } }
+	{ params }: { params: Promise<{ shiftId: string }> }
 ) {
 	const user = await getCurrentUser();
 	if (!user || user.role?.name !== 'ADMIN') {
 		return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 	}
 
-	const shiftId = params.shiftId;
+	const { shiftId } = await params;
 
 	try {
 		await prisma.employeeShift.delete({

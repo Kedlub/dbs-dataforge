@@ -10,10 +10,10 @@ const cancelSchema = z.object({
 
 export async function POST(
 	request: NextRequest,
-	{ params }: { params: { id: string } }
+	{ params }: { params: Promise<{ id: string }> }
 ) {
 	try {
-		const id = params.id;
+		const { id } = await params;
 		if (!id) {
 			return NextResponse.json(
 				{ error: 'Reservation ID is required' },

@@ -29,9 +29,9 @@ const activityUpdateSchema = z.object({
 // GET /api/activities/{id} - Fetch a single activity
 export async function GET(
 	request: NextRequest,
-	{ params }: { params: { id: string } }
+	{ params }: { params: Promise<{ id: string }> }
 ) {
-	const { id } = params;
+	const { id } = await params;
 
 	if (!id || typeof id !== 'string') {
 		return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
@@ -68,10 +68,10 @@ export async function GET(
 // PUT /api/activities/{id} - Update an activity
 export async function PUT(
 	request: NextRequest,
-	{ params }: { params: { id: string } }
+	{ params }: { params: Promise<{ id: string }> }
 ) {
 	const session = await getAuthSession();
-	const { id } = params;
+	const { id } = await params;
 
 	// Only allow admins to update activities
 	if (session?.user?.role !== 'ADMIN') {
@@ -145,10 +145,10 @@ export async function PUT(
 // DELETE /api/activities/{id} - Mark an activity as inactive
 export async function DELETE(
 	request: NextRequest,
-	{ params }: { params: { id: string } }
+	{ params }: { params: Promise<{ id: string }> }
 ) {
 	const session = await getAuthSession();
-	const { id } = params;
+	const { id } = await params;
 
 	// Only allow admins to delete (deactivate) activities
 	if (session?.user?.role !== 'ADMIN') {

@@ -5,14 +5,14 @@ import { UserEditSchema } from '@/lib/types'; // Import the Zod schema
 import { z } from 'zod';
 
 interface Params {
-	params: { userId: string };
+	params: Promise<{ userId: string }>;
 }
 
 export async function PATCH(req: Request, { params }: Params) {
 	try {
 		await requireAuth('ADMIN');
 
-		const { userId } = params;
+		const { userId } = await params;
 		if (!userId) {
 			return new NextResponse('Missing User ID', { status: 400 });
 		}
@@ -35,7 +35,9 @@ export async function PATCH(req: Request, { params }: Params) {
 		// Prepare data for Prisma, conditionally including the phone field
 		const dataToUpdate = {
 			...validationResult.data,
-			...(validationResult.data.phone !== undefined && { phone: validationResult.data.phone })
+			...(validationResult.data.phone !== undefined && {
+				phone: validationResult.data.phone
+			})
 		};
 
 		// Check if there's actually any data to update after validation
@@ -81,7 +83,7 @@ export async function DELETE(req: Request, { params }: Params) {
 	try {
 		await requireAuth('ADMIN');
 
-		const { userId } = params;
+		const { userId } = await params;
 
 		if (!userId) {
 			return new NextResponse('User ID missing', { status: 400 });

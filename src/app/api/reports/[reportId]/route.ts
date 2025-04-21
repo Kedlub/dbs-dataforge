@@ -3,13 +3,13 @@ import prisma from '@/lib/db';
 import { getAuthSession } from '@/lib/auth';
 
 interface RouteParams {
-	params: {
+	params: Promise<{
 		reportId: string;
-	};
+	}>;
 }
 
 export async function GET(request: Request, { params }: RouteParams) {
-	const { reportId } = params;
+	const { reportId } = await params;
 
 	if (!reportId) {
 		return new NextResponse('Report ID missing', { status: 400 });
