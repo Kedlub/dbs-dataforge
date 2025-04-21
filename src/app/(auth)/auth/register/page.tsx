@@ -1,11 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { HookFormAuth } from '@/components/auth/hook-form-auth';
 
-export default function RegisterPage() {
+// New component to contain the logic using useSearchParams
+function RegisterFormContent() {
 	const router = useRouter();
 	const searchParams = useSearchParams();
 
@@ -68,13 +69,22 @@ export default function RegisterPage() {
 	};
 
 	return (
+		<HookFormAuth
+			type="register"
+			onSubmit={handleRegister}
+			loading={loading}
+			error={error || undefined}
+		/>
+	);
+}
+
+export default function RegisterPage() {
+	return (
 		<div className="flex min-h-screen flex-col items-center justify-center py-8">
-			<HookFormAuth
-				type="register"
-				onSubmit={handleRegister}
-				loading={loading}
-				error={error || undefined}
-			/>
+			{/* Wrap the new component in Suspense */}
+			<Suspense fallback={<div>Načítání...</div>}>
+				<RegisterFormContent />
+			</Suspense>
 		</div>
 	);
 }

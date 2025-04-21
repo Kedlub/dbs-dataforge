@@ -1,10 +1,12 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
-export default function AuthErrorPage() {
+// New component to contain the logic using useSearchParams
+function AuthErrorContent() {
 	const searchParams = useSearchParams();
 	const error = searchParams.get('error');
 
@@ -30,22 +32,31 @@ export default function AuthErrorPage() {
 	}
 
 	return (
-		<div className="flex min-h-screen items-center justify-center px-4 py-12">
-			<div className="bg-card w-full max-w-md space-y-6 rounded-lg border p-6 shadow-sm">
-				<div className="space-y-2 text-center">
-					<h1 className="text-destructive text-2xl font-bold">Chyba ověření</h1>
-					<p className="text-muted-foreground">{errorMessage}</p>
-				</div>
-
-				<div className="flex justify-center space-x-4 pt-4">
-					<Button asChild variant="outline">
-						<Link href="/auth/login">Zpět na přihlášení</Link>
-					</Button>
-					<Button asChild>
-						<Link href="/">Zpět na úvod</Link>
-					</Button>
-				</div>
+		<div className="bg-card w-full max-w-md space-y-6 rounded-lg border p-6 shadow-sm">
+			<div className="space-y-2 text-center">
+				<h1 className="text-destructive text-2xl font-bold">Chyba ověření</h1>
+				<p className="text-muted-foreground">{errorMessage}</p>
 			</div>
+
+			<div className="flex justify-center space-x-4 pt-4">
+				<Button asChild variant="outline">
+					<Link href="/auth/login">Zpět na přihlášení</Link>
+				</Button>
+				<Button asChild>
+					<Link href="/">Zpět na úvod</Link>
+				</Button>
+			</div>
+		</div>
+	);
+}
+
+export default function AuthErrorPage() {
+	return (
+		<div className="flex min-h-screen items-center justify-center px-4 py-12">
+			{/* Wrap the new component in Suspense */}
+			<Suspense fallback={<div>Načítání chyby...</div>}>
+				<AuthErrorContent />
+			</Suspense>
 		</div>
 	);
 }
