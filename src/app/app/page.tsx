@@ -215,7 +215,7 @@ export default async function Dashboard() {
 							</Link>
 						</Button>
 						<Button asChild variant="outline" className="justify-start">
-							<Link href="/app/profile">
+							<Link href="/app/account">
 								<User className="mr-2 h-4 w-4" />
 								Aktualizovat informace profilu
 							</Link>
