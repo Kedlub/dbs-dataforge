@@ -24,6 +24,13 @@ export async function POST(request: NextRequest) {
 			);
 		}
 
+		if (!currentUser.passwordHash) {
+			return NextResponse.json(
+				{ error: 'User password hash is missing' },
+				{ status: 400 }
+			);
+		}
+
 		// Verify current password
 		const isPasswordValid = await compare(
 			currentPassword,

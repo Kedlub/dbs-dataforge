@@ -37,8 +37,9 @@ const facilityUpdateSchema = z
 // GET /api/facilities/{id} - Fetch a single facility with activities
 export async function GET(
 	request: NextRequest,
-	{ params }: { params: { id: string } }
+	{ params: paramsPromise }: { params: Promise<{ id: string }> }
 ) {
+	const params = await paramsPromise; // Await the promise
 	const { id } = params;
 	if (!id) {
 		return NextResponse.json({ error: 'Missing facility ID' }, { status: 400 });
@@ -74,9 +75,10 @@ export async function GET(
 // PUT /api/facilities/{id} - Update a facility and its activities
 export async function PUT(
 	request: NextRequest,
-	{ params }: { params: { id: string } }
+	{ params: paramsPromise }: { params: Promise<{ id: string }> }
 ) {
 	const session = await getServerSession(authOptions);
+	const params = await paramsPromise; // Await the promise
 	const { id } = params;
 
 	if (!session || session.user.role !== 'ADMIN') {
@@ -178,9 +180,10 @@ export async function PUT(
 // DELETE /api/facilities/{id} - Delete a facility (consider soft delete)
 export async function DELETE(
 	request: NextRequest,
-	{ params }: { params: { id: string } }
+	{ params: paramsPromise }: { params: Promise<{ id: string }> }
 ) {
 	const session = await getServerSession(authOptions);
+	const params = await paramsPromise; // Await the promise
 	const { id } = params;
 
 	if (!session || session.user.role !== 'ADMIN') {

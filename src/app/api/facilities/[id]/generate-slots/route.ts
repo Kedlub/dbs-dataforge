@@ -10,9 +10,10 @@ const DAYS_TO_GENERATE = 7;
 
 export async function POST(
 	request: NextRequest,
-	{ params }: { params: { id: string } }
+	{ params: paramsPromise }: { params: Promise<{ id: string }> }
 ) {
 	const session = await getServerSession(authOptions);
+	const params = await paramsPromise; // Await the promise
 	const { id: facilityId } = params;
 
 	if (!session || session.user.role !== 'ADMIN') {
