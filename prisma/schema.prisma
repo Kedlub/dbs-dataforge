@@ -30,7 +30,7 @@ model Role {
 model User {
   id               String        @id @default(uuid())
   username         String        @unique
-  passwordHash     String        @map("password_hash")
+  passwordHash     String?       @map("password_hash")
   firstName        String        @map("first_name")
   lastName         String        @map("last_name")
   email            String        @unique
@@ -130,7 +130,7 @@ model Reservation {
   cancellationReason String?  @map("cancellation_reason")
   totalPrice         Decimal  @map("total_price")
   lastModified       DateTime @updatedAt @map("last_modified")
-  internalNotes      String?  // Added internal notes field
+  internalNotes      String? // Added internal notes field
 
   @@index([userId])
   @@index([slotId])

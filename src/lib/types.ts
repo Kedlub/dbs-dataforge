@@ -179,3 +179,12 @@ export const UserEditSchema = z.object({
 });
 
 export type UserEditData = z.infer<typeof UserEditSchema>;
+
+// Type for user search results in manual reservation dialog
+export interface UserSearchResult {
+	id: string;
+	firstName: string;
+	lastName: string;
+	email: string;
+	phone: string | null;
+}

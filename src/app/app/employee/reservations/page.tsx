@@ -4,6 +4,8 @@ import { Reservation } from '@/lib/types';
 import { columns } from '@/components/reservations/columns';
 import { DataTable } from '@/components/reservations/data-table';
 import { Metadata } from 'next';
+import { ManualReservationDialog } from '@/components/reservations/ManualReservationDialog';
+import { revalidatePath } from 'next/cache';
 
 export const metadata: Metadata = {
 	title: 'Správa rezervací',
@@ -48,17 +50,28 @@ async function getReservations(): Promise<Reservation[]> {
 	})) as unknown as Reservation[];
 }
 
+// Define the revalidate function outside the component
+async function revalidateReservations() {
+	'use server';
+	revalidatePath('/app/employee/reservations');
+}
+
 export default async function EmployeeReservationsPage() {
 	await requireAuth(['ADMIN', 'EMPLOYEE']);
 	const reservations = await getReservations();
 
 	return (
 		<div className="container mx-auto py-8">
-			<h1 className="mb-6 text-3xl font-bold">Správa rezervací</h1>
-			<p className="text-muted-foreground mb-6">
-				Přehled všech rezervací v systému. Zde můžete spravovat existující
-				rezervace.
-			</p>
+			<div className="mb-6 flex items-center justify-between">
+				<div>
+					<h1 className="text-3xl font-bold">Správa rezervací</h1>
+					<p className="text-muted-foreground mt-1">
+						Přehled všech rezervací v systému. Zde můžete spravovat existující
+						rezervace.
+					</p>
+				</div>
+				<ManualReservationDialog onSuccess={revalidateReservations} />
+			</div>
 			<DataTable columns={columns} data={reservations} />
 		</div>
 	);

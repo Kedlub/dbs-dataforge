@@ -60,11 +60,20 @@ export function EditTimeSlotDialog({
 	const [fetchError, setFetchError] = useState<string | null>(null);
 
 	const fetchAvailableSlots = useCallback(
-		async (date: Date, facilityId: string) => {
+		async (date: Date) => {
 			setIsLoadingSlots(true);
 			setAvailableSlots([]);
 			setSelectedSlotId(undefined); // Reset selection when date changes
 			setFetchError(null);
+
+			// Ensure we have the facility ID from the reservation
+			const facilityId = reservation.timeSlot?.facilityId;
+			if (!facilityId) {
+				setFetchError('Chybí ID sportoviště v rezervaci.');
+				setIsLoadingSlots(false);
+				return;
+			}
+
 			try {
 				const formattedDate = format(date, 'yyyy-MM-dd');
 				const response = await fetch(
@@ -89,35 +98,45 @@ export function EditTimeSlotDialog({
 				setIsLoadingSlots(false);
 			}
 		},
-		[]
+		[reservation.id, reservation.timeSlot?.facilityId]
 	);
 
 	// Fetch slots when selectedDate changes
 	useEffect(() => {
-		if (selectedDate && reservation.timeSlot?.facilityId) {
+		if (selectedDate && reservation.id && reservation.timeSlot?.facilityId) {
 			// Only fetch if the date is different from the original reservation date
 			// or if the dialog is opened for the first time with the default date.
 			// Avoid fetching if the date picker is just opened.
+			const originalDate = reservation.timeSlot?.startTime
+				? startOfDay(new Date(reservation.timeSlot.startTime))
+				: null;
+
 			if (
 				isOpen &&
-				startOfDay(selectedDate).toISOString() !==
-					startOfDay(
-						new Date(reservation.timeSlot.startTime as string)
-					).toISOString()
+				originalDate &&
+				startOfDay(selectedDate).toISOString() !== originalDate.toISOString()
 			) {
-				fetchAvailableSlots(selectedDate, reservation.timeSlot.facilityId);
-			} else if (isOpen && availableSlots.length === 0 && !isLoadingSlots) {
-				// Initial fetch if dialog opens with default date
-				fetchAvailableSlots(selectedDate, reservation.timeSlot.facilityId);
+				fetchAvailableSlots(selectedDate);
+			} else if (
+				isOpen &&
+				availableSlots.length === 0 &&
+				!isLoadingSlots &&
+				originalDate &&
+				startOfDay(selectedDate).toISOString() === originalDate.toISOString()
+			) {
+				// Initial fetch if dialog opens with default (original) date
+				fetchAvailableSlots(selectedDate);
 			}
 		}
 	}, [
 		selectedDate,
+		reservation.id,
 		reservation.timeSlot?.facilityId,
 		fetchAvailableSlots,
 		isOpen,
 		availableSlots.length,
-		isLoadingSlots
+		isLoadingSlots,
+		reservation.timeSlot?.startTime
 	]);
 
 	const handleSaveChanges = async () => {
