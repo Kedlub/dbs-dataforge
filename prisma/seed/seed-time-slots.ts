@@ -31,7 +31,8 @@ async function seedTimeSlots() {
 		// Create time slots for each facility for the next 7 days
 		for (const facility of facilities) {
 			// Create slots based on facility opening and closing hours
-			for (let dayOffset = 0; dayOffset < 7; dayOffset++) {
+			// Generate slots for 7 days in the past and 7 days in the future
+			for (let dayOffset = -7; dayOffset < 7; dayOffset++) {
 				const currentDay = addDays(today, dayOffset);
 
 				// Skip if facility is closed

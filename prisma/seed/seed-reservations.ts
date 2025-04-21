@@ -1,5 +1,5 @@
 import { PrismaClient } from '../../generated/prisma';
-import { addDays, setHours, startOfHour } from 'date-fns';
+import { addDays, setHours, startOfHour, startOfDay } from 'date-fns';
 
 const prisma = new PrismaClient();
 
@@ -47,6 +47,8 @@ async function seedReservations() {
 
 		const reservationsToCreate = [];
 		const today = new Date();
+
+		// --- Upcoming Reservations ---
 
 		// Example 1: Petr Svoboda reserves Tennis tomorrow at 10 AM
 		const user1 = users.find((u) => u.username === 'petr.svoboda');
@@ -135,6 +137,85 @@ async function seedReservations() {
 			}
 		}
 
+		// --- Past Reservations ---
+
+		// Example 3: Jan Novak reserved Badminton 3 days ago at 14:00 (Completed)
+		const user3 = user1; // Reuse user1 (Petr Svoboda)
+		const badmintonActivity = activities.find((a) =>
+			a.name.toLowerCase().includes('badminton')
+		);
+
+		// Find the facility linked to the Badminton activity
+		let badmintonFacilityId: string | null = null;
+		if (badmintonActivity) {
+			const facilityLink = await prisma.facilityActivity.findFirst({
+				where: { activityId: badmintonActivity.id }
+			});
+			if (facilityLink) {
+				badmintonFacilityId = facilityLink.facilityId;
+			}
+		}
+
+		if (user3 && badmintonActivity && badmintonFacilityId) {
+			const targetDay = addDays(today, -3);
+			const targetHour = setHours(targetDay, 14);
+			const reservationTime = startOfHour(targetHour);
+			const pastSlot = await prisma.timeSlot.findFirst({
+				where: {
+					facilityId: badmintonFacilityId,
+					startTime: { equals: reservationTime }
+					// We look for the slot even if it's marked unavailable now
+				}
+			});
+
+			if (pastSlot) {
+				reservationsToCreate.push({
+					userId: user3.id,
+					slotId: pastSlot.id,
+					activityId: badmintonActivity.id,
+					status: 'confirmed', // Past reservation, now marked as confirmed
+					totalPrice: badmintonActivity.price
+				});
+				// Note: We don't need to update the past slot's availability again
+			} else {
+				console.log('⚠️ Badminton Slot from 3 days ago NOT found for seeding.');
+			}
+		}
+
+		// Example 4: Eva Konecna had a Fitness reservation 5 days ago at 9:00 (Cancelled)
+		const user4 = user2; // Reuse user2 (Eva Konecna)
+		const fitnessActivity = activities.find((a) =>
+			a.name.toLowerCase().includes('fitness')
+		);
+		const fitnessFacility = facilities.find((f) =>
+			f.name.toLowerCase().includes('fitness')
+		);
+
+		if (user4 && fitnessActivity && fitnessFacility) {
+			const targetDay = addDays(today, -5);
+			const targetHour = setHours(targetDay, 9);
+			const reservationTime = startOfHour(targetHour);
+			const pastSlot = await prisma.timeSlot.findFirst({
+				where: {
+					facilityId: fitnessFacility.id,
+					startTime: { equals: reservationTime }
+				}
+			});
+
+			if (pastSlot) {
+				reservationsToCreate.push({
+					userId: user4.id,
+					slotId: pastSlot.id,
+					activityId: fitnessActivity.id,
+					status: 'cancelled', // Past cancelled reservation
+					cancellationReason: 'Seeding example: User illness',
+					totalPrice: fitnessActivity.price
+				});
+			} else {
+				console.log('⚠️ Fitness Slot from 5 days ago NOT found for seeding.');
+			}
+		}
+
 		// Create reservations
 		if (reservationsToCreate.length > 0) {
 			await prisma.reservation.createMany({
@@ -142,11 +223,26 @@ async function seedReservations() {
 			});
 
 			// Update timeslots (simple approach, ideally use transaction)
-			const slotIdsToUpdate = reservationsToCreate.map((r) => r.slotId);
-			await prisma.timeSlot.updateMany({
-				where: { id: { in: slotIdsToUpdate } },
-				data: { isAvailable: false }
+			// Only update availability for *present and future* reservations being created now
+			// Fetch the slots corresponding to the newly created reservations
+			const createdReservationSlotIds = reservationsToCreate.map(
+				(r) => r.slotId
+			);
+			const slots = await prisma.timeSlot.findMany({
+				where: { id: { in: createdReservationSlotIds } }
 			});
+
+			// Filter these slots to find only those starting today or later
+			const futureAndPresentSlotIdsToUpdate = slots
+				.filter((slot) => slot.startTime >= startOfDay(today))
+				.map((slot) => slot.id);
+
+			if (futureAndPresentSlotIdsToUpdate.length > 0) {
+				await prisma.timeSlot.updateMany({
+					where: { id: { in: futureAndPresentSlotIdsToUpdate } },
+					data: { isAvailable: false }
+				});
+			}
 		}
 
 		console.log(
@@ -164,10 +260,10 @@ export { seedReservations };
 
 // Main execution block for standalone testing
 async function main() {
-	// console.log('🚀 Starting reservations seed script independently...'); // Removed standalone log
+	console.log('🚀 Starting reservations seed script independently...');
 	try {
 		await seedReservations();
-		// console.log('✅ Reservations seeding finished successfully!'); // Removed standalone log
+		console.log('✅ Reservations seeding finished successfully!');
 	} catch (error) {
 		console.error('❌ Failed to seed reservations independently:', error);
 		process.exit(1);
