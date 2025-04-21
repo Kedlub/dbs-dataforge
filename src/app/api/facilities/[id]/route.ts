@@ -1,216 +1,240 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/db';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/app/api/auth/[...nextauth]/route';
 import { z } from 'zod';
+import { getServerSession } from 'next-auth/next';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { Prisma } from '../../../../../generated/prisma';
 
-// Reuse the schema from the form component, but make fields optional for PATCH
-const facilityPatchSchema = z.object({
-	name: z.string().min(3).optional(),
-	description: z.string().optional().nullable(),
-	capacity: z.coerce.number().int().positive().optional(),
-	status: z.enum(['ACTIVE', 'MAINTENANCE', 'CLOSED']).optional(),
-	openingHour: z.coerce.number().int().min(0).max(23).optional(),
-	closingHour: z.coerce.number().int().min(0).max(23).optional(),
-	imageUrl: z.string().url().optional().nullable().or(z.literal(''))
-});
+// Status type definition
+type FacilityStatusString = 'ACTIVE' | 'MAINTENANCE' | 'CLOSED';
 
-// Define a schema that includes the closingHour refinement
-const facilityUpdateSchema = facilityPatchSchema.partial().refine(
-	(data) => {
-		// If both hours are provided, closing must be after opening
-		if (data.openingHour !== undefined && data.closingHour !== undefined) {
-			return data.closingHour > data.openingHour;
+// Schema for validation on the server side for updates
+const facilityUpdateSchema = z
+	.object({
+		name: z.string().min(3).optional(),
+		description: z.string().optional().nullable(),
+		capacity: z.number().int().positive().optional(),
+		status: z.enum(['ACTIVE', 'MAINTENANCE', 'CLOSED']).optional(),
+		openingHour: z.number().int().min(0).max(23).optional(),
+		closingHour: z.number().int().min(0).max(23).optional(),
+		imageUrl: z.string().url().optional().nullable(),
+		activityIds: z.array(z.string().uuid()).optional()
+	})
+	.refine(
+		(data) => {
+			// Validate opening/closing hours only if both are provided
+			if (data.openingHour !== undefined && data.closingHour !== undefined) {
+				return data.closingHour > data.openingHour;
+			}
+			return true; // Pass validation if one or both are missing
+		},
+		{
+			message: 'Zavírací hodina musí být pozdější než otevírací hodina.',
+			path: ['closingHour']
 		}
-		return true; // Validation passes if only one or neither is provided
-	},
-	{
-		message:
-			'Zavírací hodina musí být pozdější než otevírací hodina, pokud jsou obě zadány.',
-		path: ['closingHour']
-	}
-);
+	);
 
+// GET /api/facilities/{id} - Fetch a single facility with activities
 export async function GET(
-	req: Request,
-	{ params }: { params: Promise<{ id: string }> }
+	request: NextRequest,
+	{ params }: { params: { id: string } }
 ) {
-	try {
-		const id = (await params).id;
+	const { id } = params;
+	if (!id) {
+		return NextResponse.json({ error: 'Missing facility ID' }, { status: 400 });
+	}
 
+	try {
 		const facility = await prisma.facility.findUnique({
-			where: {
-				id: id
+			where: { id },
+			include: {
+				activities: {
+					// Include associated activity IDs
+					select: { activityId: true }
+				}
 			}
 		});
 
 		if (!facility) {
 			return NextResponse.json(
-				{ message: 'Sportoviště nebylo nalezeno' },
+				{ error: 'Sportoviště nenalezeno' },
 				{ status: 404 }
 			);
 		}
-
 		return NextResponse.json(facility);
 	} catch (error) {
-		console.error('Error fetching facility:', error);
+		console.error(`Error fetching facility ${id}:`, error);
 		return NextResponse.json(
-			{ message: 'Interní chyba serveru' },
+			{ error: 'Interní chyba serveru' },
 			{ status: 500 }
 		);
 	}
 }
 
-export async function PATCH(
-	req: NextRequest,
-	{ params }: { params: Promise<{ id: string }> }
+// PUT /api/facilities/{id} - Update a facility and its activities
+export async function PUT(
+	request: NextRequest,
+	{ params }: { params: { id: string } }
 ) {
 	const session = await getServerSession(authOptions);
-	if (session?.user?.role !== 'ADMIN') {
-		return NextResponse.json({ message: 'Přístup odepřen' }, { status: 403 });
+	const { id } = params;
+
+	if (!session || session.user.role !== 'ADMIN') {
+		return NextResponse.json({ error: 'Přístup odepřen.' }, { status: 403 });
+	}
+
+	if (!id) {
+		return NextResponse.json({ error: 'Missing facility ID' }, { status: 400 });
 	}
 
 	try {
-		const id = (await params).id;
-		const body = await req.json();
+		const body = await request.json();
+		const validation = facilityUpdateSchema.safeParse(body);
 
-		// Find the existing facility to validate opening/closing hours correctly
-		const existingFacility = await prisma.facility.findUnique({
-			where: { id },
-			select: { openingHour: true, closingHour: true }
-		});
-
-		if (!existingFacility) {
-			return NextResponse.json(
-				{ message: 'Sportoviště pro aktualizaci nebylo nalezeno' },
-				{ status: 404 }
+		if (!validation.success) {
+			console.error(
+				'Facility update validation failed:',
+				validation.error.errors
 			);
-		}
-
-		// Validate the incoming data along with existing data for time check
-		const validationData = {
-			...existingFacility, // Use existing hours as base
-			...body // Override with new hours if provided
-		};
-		// Just validate, don't need the result if it passes
-		facilityUpdateSchema.parse(validationData);
-
-		// We need to parse the body separately with the looser patch schema
-		// to know exactly which fields were sent by the client for update.
-		const bodyParsed = facilityPatchSchema.parse(body);
-
-		// Filter out undefined values from the *original body* before updating
-		const dataToUpdate: Record<string, any> = Object.fromEntries(
-			Object.entries(bodyParsed).filter(([_, v]) => v !== undefined)
-		);
-
-		// Handle imageUrl specifically: map empty string from form to null for DB
-		if ('imageUrl' in dataToUpdate) {
-			// Check existence before accessing
-			if (dataToUpdate.imageUrl === '') {
-				dataToUpdate.imageUrl = null;
-			}
-		} else {
-			// If imageUrl was not in the body, explicitly remove potential undefined value
-			delete dataToUpdate.imageUrl;
-		}
-
-
-
-		const updatedFacilitySelect = await prisma.facility.findMany({
-			where: { id }
-		});
-		// Wrap update in transaction to set user context for the trigger
-		const updatedFacility = await prisma.$transaction(async (tx) => {
-			// Set the session variable for the current transaction
-			// The 'true' argument makes the setting local to the transaction
-			await tx.$executeRaw`SELECT set_config('app.current_user_id', ${session!.user.id}, true)`;
-
-			// Perform the update
-			const facility = await tx.facility.update({
-				where: { id },
-				data: dataToUpdate
-			});
-
-			// Optionally, you could clear the setting, but it's transaction-local anyway
-			// await tx.$executeRaw`SELECT set_config('app.current_user_id', '', true)`;
-
-			return facility;
-		});
-
-		console.log([updatedFacility]); // Log the result (contains only the updated facility)
-
-		return NextResponse.json(updatedFacility);
-	} catch (error) {
-		if (error instanceof z.ZodError) {
 			return NextResponse.json(
-				{ message: 'Neplatná data', errors: error.errors },
+				{
+					error: 'Neplatná data formuláře.',
+					details: validation.error.flatten()
+				},
 				{ status: 400 }
 			);
 		}
-		console.error('Error updating facility:', error);
+
+		const { activityIds, ...facilityData } = validation.data;
+
+		// Check if facility exists before transaction
+		const existingFacility = await prisma.facility.findUnique({
+			where: { id }
+		});
+		if (!existingFacility) {
+			return NextResponse.json(
+				{ error: 'Sportoviště nenalezeno' },
+				{ status: 404 }
+			);
+		}
+
+		// Use Prisma transaction to update facility and activities atomically
+		const updatedFacility = await prisma.$transaction(async (tx) => {
+			// 1. Update the facility details
+			const facilityUpdate = await tx.facility.update({
+				where: { id },
+				data: {
+					...facilityData,
+					// Handle potential undefined values for hours
+					openingHour: facilityData.openingHour ?? existingFacility.openingHour,
+					closingHour: facilityData.closingHour ?? existingFacility.closingHour,
+					imageUrl: facilityData.imageUrl // Already handles null
+				}
+			});
+
+			// 2. Clear existing activity associations for this facility
+			await tx.facilityActivity.deleteMany({
+				where: { facilityId: id }
+			});
+
+			// 3. If activityIds are provided, create new associations
+			if (activityIds && activityIds.length > 0) {
+				await tx.facilityActivity.createMany({
+					data: activityIds.map((actId) => ({
+						facilityId: id,
+						activityId: actId
+					})),
+					skipDuplicates: true
+				});
+			}
+
+			return facilityUpdate; // Return the updated facility data
+		});
+
+		return NextResponse.json(updatedFacility);
+	} catch (error) {
+		console.error(`Error updating facility ${id}:`, error);
+		if (error instanceof Prisma.PrismaClientKnownRequestError) {
+			if (error.code === 'P2002') {
+				return NextResponse.json(
+					{ error: 'Sportoviště s tímto názvem již může existovat.' },
+					{ status: 409 }
+				);
+			}
+			if (error.code === 'P2025') {
+				return NextResponse.json(
+					{ error: 'Sportoviště nenalezeno' },
+					{ status: 404 }
+				);
+			}
+		}
 		return NextResponse.json(
-			{ message: 'Interní chyba serveru při aktualizaci sportoviště' },
+			{ error: 'Interní chyba serveru při aktualizaci sportoviště.' },
 			{ status: 500 }
 		);
 	}
 }
 
+// DELETE /api/facilities/{id} - Delete a facility (consider soft delete)
 export async function DELETE(
-	req: NextRequest,
-	{ params }: { params: Promise<{ id: string }> }
+	request: NextRequest,
+	{ params }: { params: { id: string } }
 ) {
 	const session = await getServerSession(authOptions);
-	if (session?.user?.role !== 'ADMIN') {
-		return NextResponse.json({ message: 'Přístup odepřen' }, { status: 403 });
+	const { id } = params;
+
+	if (!session || session.user.role !== 'ADMIN') {
+		return NextResponse.json({ error: 'Přístup odepřen.' }, { status: 403 });
+	}
+
+	if (!id) {
+		return NextResponse.json({ error: 'Missing facility ID' }, { status: 400 });
 	}
 
 	try {
-		const id = (await params).id;
-
-		// Optional: Check if facility exists before attempting delete
+		// Check if facility exists before deleting
 		const existingFacility = await prisma.facility.findUnique({
 			where: { id }
 		});
-
 		if (!existingFacility) {
 			return NextResponse.json(
-				{ message: 'Sportoviště pro smazání nebylo nalezeno' },
+				{ error: 'Sportoviště nenalezeno' },
 				{ status: 404 }
 			);
 		}
 
-		// Note: Depending on your schema constraints, you might need to handle
-		// related records (e.g., reservations, time slots) before deleting.
-		// Prisma's default behavior might prevent deletion if related records exist.
-		// Add cascading deletes in your Prisma schema or handle cleanup manually here.
-		await prisma.facility.delete({
-			where: {
-				id: id
+		// Perform deletion (cascades should handle related FacilityActivity, TimeSlot, etc. based on schema)
+		await prisma.facility.delete({ where: { id } });
+
+		/* 
+		// --- Alternative: Soft Delete (Mark as inactive/closed) ---
+		await prisma.facility.update({
+			where: { id },
+			data: { 
+				status: 'CLOSED', // Or add an isDeleted flag
+				// Consider implications: Should associated activities be removed? Time slots? Reservations?
 			}
 		});
+		*/
 
 		return NextResponse.json(
-			{ message: 'Sportoviště úspěšně smazáno' },
+			{ message: 'Sportoviště bylo úspěšně smazáno.' },
 			{ status: 200 }
 		);
-	} catch (error: any) {
-		console.error('Error deleting facility:', error);
-
-		// Handle potential Prisma errors, e.g., foreign key constraint violation
-		if (error.code === 'P2003') {
-			// Prisma code for foreign key constraint failure
-			return NextResponse.json(
-				{
-					message:
-						'Nelze smazat sportoviště, protože má existující rezervace nebo časové sloty.'
-				},
-				{ status: 409 } // Conflict
-			);
+	} catch (error) {
+		console.error(`Error deleting facility ${id}:`, error);
+		if (error instanceof Prisma.PrismaClientKnownRequestError) {
+			if (error.code === 'P2025') {
+				// Record to delete not found
+				return NextResponse.json(
+					{ error: 'Sportoviště nenalezeno' },
+					{ status: 404 }
+				);
+			}
+			// Handle other potential errors, like foreign key constraints if cascade isn't set up correctly
 		}
-
 		return NextResponse.json(
-			{ message: 'Interní chyba serveru při mazání sportoviště' },
+			{ error: 'Interní chyba serveru při mazání sportoviště.' },
 			{ status: 500 }
 		);
 	}

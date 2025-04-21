@@ -15,7 +15,7 @@ alwaysApply: true
 - All Typescript types should be in src/lib/types.ts
 - Use sonner for toast notifications.
 - Make the UI in Czech.
-- Prisma db client in in @/lib/db, and the Prisma type object is located in "generated/prisma" folder in root of the workspace.
+- Prepared Prisma db client in in @/lib/db, and the Prisma type object is located in "generated/prisma" folder in root of the workspace (NOT in src folder). It's a new Prisma version that no longer uses @prisma/client!
 
 ## Database Functions
 

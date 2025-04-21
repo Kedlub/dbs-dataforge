@@ -7,6 +7,7 @@ import {
 	Dumbbell,
 	Clock,
 	BookCheck,
+	Activity as ActivityIcon,
 	User,
 	UserCog,
 	BarChart,
@@ -80,6 +81,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 				url: '/app/users',
 				icon: Users,
 				isActive: pathname.startsWith('/app/users')
+			});
+
+			commonItems.push({
+				title: 'Správa Aktivit',
+				url: '/app/activities',
+				icon: ActivityIcon,
+				isActive: pathname.startsWith('/app/activities')
 			});
 
 			commonItems.push({

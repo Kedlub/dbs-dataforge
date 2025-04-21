@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { authOptions } from '@/app/api/auth/[...nextauth]/route'; // Import from the actual source
 import prisma from '@/lib/db'; // Use default import for prisma
 import { z } from 'zod';
+import { Prisma } from '../../../../generated/prisma'; // Import Prisma types
 
 // Assuming status is stored as string in DB
 type FacilityStatusString = 'ACTIVE' | 'MAINTENANCE' | 'CLOSED';
@@ -20,14 +21,15 @@ const facilityCreateSchema = z.object({
 	]) satisfies z.ZodType<FacilityStatusString>,
 	openingHour: z.number().int().min(0).max(23), // Expect hour as integer 0-23
 	closingHour: z.number().int().min(0).max(23), // Expect hour as integer 0-23
-	imageUrl: z.string().url().optional().or(z.literal('')) // camelCase
+	imageUrl: z.string().url().optional().nullable(), // Allow null
+	activityIds: z.array(z.string().uuid()).optional() // Expect activityIds
 });
 
 export async function POST(req: Request) {
 	const session = await getServerSession(authOptions);
 
 	if (!session || session.user.role !== 'ADMIN') {
-		return NextResponse.json({ message: 'Přístup odepřen.' }, { status: 403 });
+		return NextResponse.json({ error: 'Přístup odepřen.' }, { status: 403 });
 	}
 
 	try {
@@ -38,51 +40,63 @@ export async function POST(req: Request) {
 			console.error('Facility validation failed:', validation.error.errors);
 			return NextResponse.json(
 				{
-					message: 'Neplatná data formuláře.',
-					errors: validation.error.errors
+					error: 'Neplatná data formuláře.',
+					details: validation.error.flatten()
 				},
 				{ status: 400 }
 			);
 		}
 
-		// Keep numbers for validation
-		const { name, capacity, status, openingHour, closingHour, imageUrl } =
+		const { openingHour, closingHour, activityIds, ...facilityData } =
 			validation.data;
 
-		// Check using numbers
 		if (openingHour >= closingHour) {
 			return NextResponse.json(
-				{
-					message: 'Otevírací hodina musí být dříve než zavírací hodina.'
-				},
+				{ error: 'Otevírací hodina musí být dříve než zavírací hodina.' },
 				{ status: 400 }
 			);
 		}
 
-		const newFacility = await prisma.facility.create({
-			data: {
-				name,
-				description: validation.data.description,
-				capacity,
-				status,
-				openingHour,
-				closingHour,
-				imageUrl: imageUrl || null
+		// Use Prisma transaction
+		const newFacility = await prisma.$transaction(async (tx) => {
+			// 1. Create the facility
+			const createdFacility = await tx.facility.create({
+				data: {
+					...facilityData,
+					openingHour,
+					closingHour,
+					imageUrl: facilityData.imageUrl || null // Ensure null if empty string came
+				}
+			});
+
+			// 2. If activityIds are provided, create associations
+			if (activityIds && activityIds.length > 0) {
+				await tx.facilityActivity.createMany({
+					data: activityIds.map((actId) => ({
+						facilityId: createdFacility.id,
+						activityId: actId
+					})),
+					skipDuplicates: true // In case of any potential race condition/duplicates
+				});
 			}
+
+			return createdFacility;
 		});
 
 		return NextResponse.json(newFacility, { status: 201 });
 	} catch (error) {
 		console.error('Error creating facility:', error);
-		if (error instanceof z.ZodError) {
-			// Catch potential JSON parsing errors wrapped by Zod
-			return NextResponse.json(
-				{ message: 'Neplatný formát požadavku.', errors: error.errors },
-				{ status: 400 }
-			);
+		if (error instanceof Prisma.PrismaClientKnownRequestError) {
+			// Handle specific Prisma errors if needed (e.g., unique constraints)
+			if (error.code === 'P2002') {
+				return NextResponse.json(
+					{ error: 'Sportoviště s tímto názvem již může existovat.' },
+					{ status: 409 }
+				);
+			}
 		}
 		return NextResponse.json(
-			{ message: 'Interní chyba serveru při vytváření sportoviště.' },
+			{ error: 'Interní chyba serveru při vytváření sportoviště.' },
 			{ status: 500 }
 		);
 	}
@@ -94,16 +108,20 @@ export async function GET(req: Request) {
 		const facilities = await prisma.facility.findMany({
 			orderBy: {
 				name: 'asc' // Optional: Order by name
+			},
+			// Include associated activities
+			include: {
+				activities: {
+					select: { activityId: true } // Only select the ID
+				}
 			}
-			// You might want to include related data later, e.g.:
-			// include: { activities: true }
 		});
 
 		return NextResponse.json(facilities);
 	} catch (error) {
 		console.error('Error fetching facilities:', error);
 		return NextResponse.json(
-			{ message: 'Nepodařilo se načíst sportoviště.' },
+			{ error: 'Nepodařilo se načíst sportoviště.' }, // Changed message to error
 			{ status: 500 }
 		);
 	}

@@ -22,10 +22,15 @@ import {
 	SelectTrigger,
 	SelectValue
 } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { Facility } from '@/lib/types'; // Import Facility type
+import useSWR from 'swr';
+import { Facility, Activity } from '@/lib/types';
+import { fetcher } from '@/lib/utils';
+import { Loader2, AlertCircle } from 'lucide-react';
 
 // Assuming status is stored as string in DB
 type FacilityStatusString = 'ACTIVE' | 'MAINTENANCE' | 'CLOSED';
@@ -60,7 +65,8 @@ const facilityFormSchema = z
 			.string()
 			.url({ message: 'Neplatná URL adresa obrázku.' })
 			.optional()
-			.or(z.literal(''))
+			.or(z.literal('')),
+		activityIds: z.array(z.string().uuid()).optional() // Add activityIds to schema
 	})
 	.refine((data) => data.closingHour > data.openingHour, {
 		message: 'Zavírací hodina musí být pozdější než otevírací hodina.',
@@ -87,13 +93,21 @@ const parseInputToHour = (timeString: string): number => {
 };
 
 interface FacilityFormProps {
-	initialData?: Facility;
+	initialData?: Facility & { activities?: { activityId: string }[] }; // Include activities if available
 }
 
 export function FacilityForm({ initialData }: FacilityFormProps) {
 	const router = useRouter();
 	const [isLoading, setIsLoading] = useState(false);
+	const [selectedActivityIds, setSelectedActivityIds] = useState<string[]>([]);
 	const isEditMode = !!initialData;
+
+	// Fetch all active activities
+	const {
+		data: allActivities,
+		error: activitiesError,
+		isLoading: isLoadingActivities
+	} = useSWR<Activity[]>('/api/activities', fetcher);
 
 	const form = useForm<FacilityFormValues>({
 		resolver: zodResolver(facilityFormSchema),
@@ -104,11 +118,12 @@ export function FacilityForm({ initialData }: FacilityFormProps) {
 			status: 'ACTIVE',
 			openingHour: 8, // Use number directly
 			closingHour: 22, // Use number directly
-			imageUrl: ''
+			imageUrl: '',
+			activityIds: [] // Initialize activityIds
 		}
 	});
 
-	// Pre-fill form if in edit mode
+	// Pre-fill form and selected activities if in edit mode
 	useEffect(() => {
 		if (isEditMode && initialData) {
 			form.reset({
@@ -119,15 +134,40 @@ export function FacilityForm({ initialData }: FacilityFormProps) {
 					'ACTIVE') as FacilityStatusString,
 				openingHour: initialData.openingHour,
 				closingHour: initialData.closingHour,
-				imageUrl: initialData.imageUrl || ''
+				imageUrl: initialData.imageUrl || '',
+				activityIds: initialData.activities?.map((a) => a.activityId) || [] // Pre-fill from initialData
 			});
+			// Set the state for checkboxes based on initialData
+			setSelectedActivityIds(
+				initialData.activities?.map((a) => a.activityId) || []
+			);
+		} else {
+			// Reset selections when creating a new facility
+			form.reset();
+			setSelectedActivityIds([]);
 		}
 	}, [initialData, isEditMode, form]);
+
+	// Handle checkbox changes
+	const handleActivityCheckChange = (
+		activityId: string,
+		checked: boolean | string
+	) => {
+		const currentIds = new Set(selectedActivityIds);
+		if (checked) {
+			currentIds.add(activityId);
+		} else {
+			currentIds.delete(activityId);
+		}
+		const newIds = Array.from(currentIds);
+		setSelectedActivityIds(newIds);
+		form.setValue('activityIds', newIds, { shouldValidate: true }); // Update form value
+	};
 
 	async function onSubmit(data: FacilityFormValues) {
 		setIsLoading(true);
 		try {
-			const method = isEditMode ? 'PATCH' : 'POST';
+			const method = isEditMode ? 'PUT' : 'POST';
 			const url = isEditMode
 				? `/api/facilities/${initialData?.id}`
 				: '/api/facilities';
@@ -135,10 +175,11 @@ export function FacilityForm({ initialData }: FacilityFormProps) {
 			// Prepare data for API (potentially transform fields if needed)
 			const apiData = {
 				...data,
-				imageUrl: data.imageUrl || null // Send null if empty
+				imageUrl: data.imageUrl || null,
+				activityIds: selectedActivityIds // Use state value for submission
 			};
 
-			console.log(apiData);
+			console.log('Submitting Facility Data:', apiData);
 			const response = await fetch(url, {
 				method: method,
 				headers: {
@@ -150,7 +191,7 @@ export function FacilityForm({ initialData }: FacilityFormProps) {
 			if (!response.ok) {
 				const errorData = await response.json();
 				throw new Error(
-					errorData.message ||
+					errorData.error || // Prefer backend error message
 						(isEditMode
 							? 'Nepodařilo se aktualizovat sportoviště.'
 							: 'Nepodařilo se vytvořit sportoviště.')
@@ -163,10 +204,13 @@ export function FacilityForm({ initialData }: FacilityFormProps) {
 					: 'Sportoviště bylo úspěšně vytvořeno.'
 			);
 			// Redirect to the detail page after edit, or list page after create
-			router.push(
-				isEditMode ? `/app/facilities/${initialData?.id}` : '/app/facilities'
-			);
-			router.refresh(); // Refresh server components
+			if (isEditMode) {
+				// Maybe just refresh data instead of full redirect?
+				router.refresh();
+			} else {
+				router.push('/app/facilities');
+				router.refresh();
+			}
 		} catch (error) {
 			const errorMessage =
 				error instanceof Error ? error.message : 'Neznámá chyba';
@@ -303,14 +347,69 @@ export function FacilityForm({ initialData }: FacilityFormProps) {
 						</FormItem>
 					)}
 				/>
+
+				{/* --- Activity Selection Section --- */}
+				<div className="space-y-4 rounded-md border p-4">
+					<h3 className="text-lg font-medium">Dostupné Aktivity</h3>
+					<p className="text-muted-foreground text-sm">
+						Vyberte aktivity, které budou na tomto sportovišti dostupné pro
+						rezervaci.
+					</p>
+					{isLoadingActivities && (
+						<div className="text-muted-foreground flex items-center space-x-2">
+							<Loader2 className="h-4 w-4 animate-spin" />
+							<span>Načítání aktivit...</span>
+						</div>
+					)}
+					{activitiesError && (
+						<div className="text-destructive flex items-center space-x-2">
+							<AlertCircle className="h-4 w-4" />
+							<span>Chyba při načítání aktivit.</span>
+						</div>
+					)}
+					{!isLoadingActivities && !activitiesError && (
+						<div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
+							{allActivities && allActivities.length > 0 ? (
+								allActivities.map((activity) => (
+									<div
+										key={activity.id}
+										className="flex items-center space-x-2"
+									>
+										<Checkbox
+											id={`activity-${activity.id}`}
+											checked={selectedActivityIds.includes(activity.id)}
+											onCheckedChange={(checked) =>
+												handleActivityCheckChange(activity.id, checked)
+											}
+											disabled={isLoading}
+										/>
+										<Label
+											htmlFor={`activity-${activity.id}`}
+											className="font-normal"
+										>
+											{activity.name}
+										</Label>
+									</div>
+								))
+							) : (
+								<p className="text-muted-foreground col-span-full text-sm">
+									Nejsou definovány žádné aktivní aktivity. Vytvořte je prosím v
+									sekci Správa Aktivit.
+								</p>
+							)}
+						</div>
+					)}
+					<FormField
+						control={form.control}
+						name="activityIds"
+						render={() => <FormMessage />} // Render only message if needed
+					/>
+				</div>
+				{/* --- End Activity Selection Section --- */}
+
 				<Button type="submit" disabled={isLoading}>
-					{isLoading
-						? isEditMode
-							? 'Aktualizuji...'
-							: 'Vytváření...'
-						: isEditMode
-							? 'Uložit změny'
-							: 'Vytvořit sportoviště'}
+					{isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+					{isEditMode ? 'Uložit změny' : 'Vytvořit sportoviště'}
 				</Button>
 			</form>
 		</Form>

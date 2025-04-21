@@ -33,7 +33,9 @@ import {
 	DoorOpen,
 	Pencil,
 	Trash2,
-	Users
+	Users,
+	CalendarPlus,
+	Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -50,6 +52,7 @@ export default function FacilityDetailPage() {
 	const [error, setError] = useState<string | null>(null);
 	const [isDeleting, setIsDeleting] = useState(false); // State for delete loading
 	const [isAlertOpen, setIsAlertOpen] = useState(false); // State for confirmation dialog
+	const [isGeneratingSlots, setIsGeneratingSlots] = useState(false); // State for slot generation
 
 	useEffect(() => {
 		if (!id) return;
@@ -96,6 +99,33 @@ export default function FacilityDetailPage() {
 		} finally {
 			setIsDeleting(false);
 			setIsAlertOpen(false); // Close the dialog
+		}
+	};
+
+	const handleGenerateSlots = async () => {
+		setIsGeneratingSlots(true);
+		try {
+			const response = await fetch(`/api/facilities/${id}/generate-slots`, {
+				method: 'POST'
+			});
+
+			if (!response.ok) {
+				const errorData = await response.json();
+				throw new Error(
+					errorData.error || 'Nepodařilo se vygenerovat časové sloty.'
+				);
+			}
+
+			const result = await response.json();
+			toast.success(result.message || 'Časové sloty úspěšně vygenerovány.');
+			// Optionally refresh related data if needed
+		} catch (err: any) {
+			console.error('Slot generation error:', err);
+			toast.error(
+				err.message || 'Nastala chyba při generování časových slotů.'
+			);
+		} finally {
+			setIsGeneratingSlots(false);
 		}
 	};
 
@@ -176,7 +206,7 @@ export default function FacilityDetailPage() {
 	return (
 		<>
 			<div className="container space-y-6 px-4 py-6 md:px-6 md:py-8 lg:py-10">
-				<div className="flex items-center justify-between gap-2">
+				<div className="flex flex-wrap items-center justify-between gap-2">
 					<Button
 						variant="outline"
 						onClick={() => router.push('/app/facilities')}
@@ -186,7 +216,24 @@ export default function FacilityDetailPage() {
 					</Button>
 
 					{session?.user?.role === 'ADMIN' && (
-						<div className="flex gap-2">
+						<div className="flex flex-wrap gap-2">
+							<Button
+								variant="outline"
+								onClick={handleGenerateSlots}
+								disabled={isGeneratingSlots}
+							>
+								{isGeneratingSlots ? (
+									<>
+										<Loader2 className="mr-2 h-4 w-4 animate-spin" />{' '}
+										Generuji...
+									</>
+								) : (
+									<>
+										<CalendarPlus className="mr-2 h-4 w-4" /> Generovat sloty (7
+										dní)
+									</>
+								)}
+							</Button>
 							<Button variant="secondary" asChild>
 								<Link href={`/app/facilities/edit/${id}`}>
 									<Pencil className="mr-2 h-4 w-4" />
@@ -195,8 +242,8 @@ export default function FacilityDetailPage() {
 							</Button>
 							<Button
 								variant="destructive"
-								onClick={() => setIsAlertOpen(true)} // Open confirmation dialog
-								disabled={isDeleting} // Disable while deleting
+								onClick={() => setIsAlertOpen(true)}
+								disabled={isDeleting}
 							>
 								<Trash2 className="mr-2 h-4 w-4" />
 								{isDeleting ? 'Maže se...' : 'Smazat'}
