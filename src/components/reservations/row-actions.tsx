@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Row } from '@tanstack/react-table';
 import { MoreHorizontal } from 'lucide-react';
 import { toast } from 'sonner';
@@ -48,6 +47,7 @@ import { EditTimeSlotDialog } from './edit-timeslot-dialog';
 
 interface DataTableRowActionsProps<TData> {
 	row: Row<TData>;
+	revalidate?: () => Promise<void> | void;
 }
 
 const reservationStatuses = ['pending', 'confirmed', 'cancelled'] as const;
@@ -55,10 +55,10 @@ type StatusTuple = typeof reservationStatuses;
 type ResStatus = StatusTuple[number];
 
 export function DataTableRowActions<TData extends Reservation>({
-	row
+	row,
+	revalidate
 }: DataTableRowActionsProps<TData>) {
 	const reservation = row.original;
-	const router = useRouter();
 	const [showCancelDialog, setShowCancelDialog] = useState(false);
 	const [showEditStatusDialog, setShowEditStatusDialog] = useState(false);
 	const [showEditNotesDialog, setShowEditNotesDialog] = useState(false);
@@ -100,7 +100,7 @@ export function DataTableRowActions<TData extends Reservation>({
 			toast.success('Rezervace byla úspěšně zrušena.');
 			setShowCancelDialog(false);
 			setCancellationReason('');
-			router.refresh();
+			revalidate?.();
 		} catch (error: any) {
 			console.error('Failed to cancel reservation:', error);
 			toast.error(`Chyba: ${error.message}`);
@@ -133,7 +133,7 @@ export function DataTableRowActions<TData extends Reservation>({
 
 			toast.success('Stav rezervace byl úspěšně aktualizován.');
 			setShowEditStatusDialog(false);
-			router.refresh();
+			revalidate?.();
 		} catch (error: any) {
 			console.error('Failed to update reservation status:', error);
 			toast.error(`Chyba: ${error.message}`);
@@ -168,7 +168,7 @@ export function DataTableRowActions<TData extends Reservation>({
 
 			toast.success('Poznámky byly úspěšně aktualizovány.');
 			setShowEditNotesDialog(false);
-			router.refresh();
+			revalidate?.();
 		} catch (error: any) {
 			console.error('Failed to update reservation notes:', error);
 			toast.error(`Chyba: ${error.message}`);
@@ -363,6 +363,7 @@ export function DataTableRowActions<TData extends Reservation>({
 					isOpen={showEditTimeSlotDialog}
 					onClose={() => setShowEditTimeSlotDialog(false)}
 					reservation={reservation}
+					onSuccess={revalidate}
 				/>
 			)}
 		</>

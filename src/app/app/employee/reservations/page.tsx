@@ -72,7 +72,11 @@ export default async function EmployeeReservationsPage() {
 				</div>
 				<ManualReservationDialog onSuccess={revalidateReservations} />
 			</div>
-			<DataTable columns={columns} data={reservations} />
+			<DataTable
+				columns={columns}
+				data={reservations}
+				revalidate={revalidateReservations}
+			/>
 		</div>
 	);
 }

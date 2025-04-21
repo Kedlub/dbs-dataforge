@@ -25,6 +25,14 @@ import {
 // import { DataTableColumnHeader } from '@/components/ui/data-table-column-header'; // If you have this component
 // import { DataTableRowActions } from './data-table-row-actions'; // Component for row actions (view, cancel, etc.)
 
+// Define TableMeta type for TanStack Table
+declare module '@tanstack/react-table' {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	interface TableMeta<TData> {
+		revalidate?: () => Promise<void> | void;
+	}
+}
+
 export const columns: ColumnDef<Reservation>[] = [
 	{
 		accessorKey: 'user.fullName',
@@ -116,7 +124,12 @@ export const columns: ColumnDef<Reservation>[] = [
 	},
 	{
 		id: 'actions',
-		cell: ({ row }) => <DataTableRowActions row={row} />,
+		cell: ({ row, table }) => (
+			<DataTableRowActions
+				row={row}
+				revalidate={table.options.meta?.revalidate}
+			/>
+		),
 		enableSorting: false,
 		enableHiding: false
 	}

@@ -30,11 +30,13 @@ import { Button } from '@/components/ui/button';
 interface DataTableProps<TData, TValue> {
 	columns: ColumnDef<TData, TValue>[];
 	data: TData[];
+	revalidate?: () => Promise<void> | void;
 }
 
 export function DataTable<TData, TValue>({
 	columns,
-	data
+	data,
+	revalidate
 }: DataTableProps<TData, TValue>) {
 	const [rowSelection, setRowSelection] = React.useState({});
 	const [columnVisibility, setColumnVisibility] =
@@ -52,6 +54,9 @@ export function DataTable<TData, TValue>({
 			columnVisibility,
 			rowSelection,
 			columnFilters
+		},
+		meta: {
+			revalidate
 		},
 		enableRowSelection: true,
 		onRowSelectionChange: setRowSelection,

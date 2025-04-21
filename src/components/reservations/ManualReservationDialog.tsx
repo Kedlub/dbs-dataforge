@@ -336,6 +336,7 @@ export function ManualReservationDialog({
 			});
 			setUserSearchResults([]);
 			setActivities([]);
+			onSuccess?.(); // Call the success callback to trigger revalidation
 		} catch (error: any) {
 			console.error('Error creating manual reservation:', error);
 			toast.error(`Chyba při vytváření rezervace: ${error.message}`);

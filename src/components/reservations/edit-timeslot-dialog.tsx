@@ -33,19 +33,21 @@ import { Calendar } from '@/components/ui/calendar';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 
+interface AvailableSlot
+	extends Pick<TimeSlot, 'id' | 'startTime' | 'endTime'> {}
+
 interface EditTimeSlotDialogProps {
 	isOpen: boolean;
 	onClose: () => void;
 	reservation: Reservation;
+	onSuccess?: () => Promise<void> | void;
 }
-
-interface AvailableSlot
-	extends Pick<TimeSlot, 'id' | 'startTime' | 'endTime'> {}
 
 export function EditTimeSlotDialog({
 	isOpen,
 	onClose,
-	reservation
+	reservation,
+	onSuccess
 }: EditTimeSlotDialogProps) {
 	const router = useRouter();
 	const [selectedDate, setSelectedDate] = useState<Date | undefined>(
@@ -167,7 +169,7 @@ export function EditTimeSlotDialog({
 
 			toast.success('Časový slot rezervace byl úspěšně změněn.');
 			onClose();
-			router.refresh(); // Refresh data on the page
+			onSuccess?.();
 		} catch (error: any) {
 			console.error('Failed to update time slot:', error);
 			toast.error(`Chyba: ${error.message}`);
