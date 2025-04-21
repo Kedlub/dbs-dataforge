@@ -12,7 +12,7 @@ BEGIN
     SET status = 'cancelled',
         cancellation_reason = p_cancellation_reason,
         last_modified = NOW()
-    WHERE reservation_id = p_reservation_id;
+    WHERE id = p_reservation_id;
 
     -- Potential Enhancement: Consider making the associated TimeSlot available again.
     -- UPDATE time_slots SET is_available = true WHERE slot_id = (SELECT slot_id FROM reservations WHERE reservation_id = p_reservation_id);

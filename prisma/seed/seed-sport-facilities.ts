@@ -15,13 +15,9 @@ async function seedFacilities() {
 		const count = await prisma.facility.count();
 		if (count > 0) {
 			await prisma.facility.deleteMany({});
-			console.log('Deleted existing facilities');
 		} else {
-			console.log('No existing facilities to delete');
 		}
-	} catch (error) {
-		console.log('Could not delete facilities, table might not exist yet');
-	}
+	} catch (error) {}
 
 	// Prepare facilities data
 	const facilitiesData: Facility[] = [
@@ -182,7 +178,8 @@ async function seedFacilities() {
 		})
 	);
 
-	console.log(`✅ Successfully seeded ${facilities.length} facilities`);
+	console.log(`  ✅ Successfully seeded ${facilities.length} facilities`);
+	console.log();
 	return facilities;
 }
 
@@ -190,11 +187,8 @@ async function seedFacilities() {
  * Main function to execute the seed script
  */
 async function main() {
-	console.log('Starting sports facilities seed script...');
-
 	try {
 		const facilities = await seedFacilities();
-		console.log(`Seeded ${facilities.length} sports facilities successfully!`);
 	} catch (error) {
 		console.error('Error seeding sports facilities:', error);
 		process.exit(1);

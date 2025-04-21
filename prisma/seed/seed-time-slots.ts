@@ -15,15 +15,13 @@ async function seedTimeSlots() {
 		const count = await prisma.timeSlot.count();
 		if (count > 0) {
 			await prisma.timeSlot.deleteMany({});
-			console.log('Deleted existing time slots');
 		} else {
-			console.log('No existing time slots to delete');
 		}
 
 		// Get all facilities
 		const facilities = await prisma.facility.findMany();
 		if (facilities.length === 0) {
-			console.log('No facilities found to create time slots for');
+			console.warn('⚠️ No facilities found to create time slots for');
 			return [];
 		}
 
@@ -67,7 +65,10 @@ async function seedTimeSlots() {
 			skipDuplicates: true
 		});
 
-		console.log(`✅ Successfully seeded ${createdTimeSlots.count} time slots`);
+		console.log(
+			`  ✅ Successfully seeded ${createdTimeSlots.count} time slots`
+		);
+		console.log();
 		return allTimeSlots;
 	} catch (error) {
 		console.error('Error seeding time slots:', error);
@@ -79,11 +80,8 @@ async function seedTimeSlots() {
  * Main function to execute the seed script
  */
 async function main() {
-	console.log('Starting time slots seed script...');
-
 	try {
 		const timeSlots = await seedTimeSlots();
-		console.log(`Seeded ${timeSlots.length} time slots successfully!`);
 	} catch (error) {
 		console.error('Error seeding time slots:', error);
 		process.exit(1);

@@ -18,20 +18,16 @@ async function seedActivities() {
 	try {
 		// Delete existing activities and facility-activity relations
 		await prisma.facilityActivity.deleteMany({});
-		console.log('Deleted existing facility-activity relations');
 
 		const activityCount = await prisma.activity.count();
 		if (activityCount > 0) {
 			await prisma.activity.deleteMany({});
-			console.log('Deleted existing activities');
-		} else {
-			console.log('No existing activities to delete');
 		}
 
 		// Get all facilities for later association
 		const facilities = await prisma.facility.findMany();
 		if (facilities.length === 0) {
-			console.log('No facilities found to associate activities with');
+			console.warn('⚠️ No facilities found to associate activities with');
 			return [];
 		}
 
@@ -281,8 +277,6 @@ async function seedActivities() {
 			})
 		);
 
-		console.log(`Created ${createdActivities.length} activities`);
-
 		// Create FacilityActivity relations
 		let relationCount = 0;
 		for (const activityData of activitiesData) {
@@ -311,8 +305,9 @@ async function seedActivities() {
 		}
 
 		console.log(
-			`✅ Successfully seeded ${createdActivities.length} activities and ${relationCount} facility-activity relations`
+			`  ✅ Successfully seeded ${createdActivities.length} activities and ${relationCount} facility-activity relations`
 		);
+		console.log();
 		return createdActivities;
 	} catch (error) {
 		console.error('Error seeding activities:', error);
@@ -324,11 +319,8 @@ async function seedActivities() {
  * Main function to execute the seed script
  */
 async function main() {
-	console.log('Starting activities seed script...');
-
 	try {
 		const activities = await seedActivities();
-		console.log(`Seeded ${activities.length} activities successfully!`);
 	} catch (error) {
 		console.error('Error seeding activities:', error);
 		process.exit(1);

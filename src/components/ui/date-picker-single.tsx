@@ -19,13 +19,15 @@ interface DatePickerSingleProps {
 	setDate: (date: Date | undefined) => void;
 	className?: string;
 	placeholder?: string;
+	disabled?: boolean;
 }
 
 export function DatePickerSingle({
 	date,
 	setDate,
 	className,
-	placeholder = 'Vyberte datum'
+	placeholder = 'Vyberte datum',
+	disabled = false
 }: DatePickerSingleProps) {
 	return (
 		<Popover>
@@ -35,8 +37,10 @@ export function DatePickerSingle({
 					className={cn(
 						'w-[280px] justify-start text-left font-normal',
 						!date && 'text-muted-foreground',
-						className
+						className,
+						disabled && 'cursor-not-allowed'
 					)}
+					disabled={disabled}
 				>
 					<CalendarIcon className="mr-2 h-4 w-4" />
 					{date ? (
